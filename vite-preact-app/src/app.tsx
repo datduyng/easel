@@ -84,6 +84,7 @@ export function App<FC>() {
               content: "new note content",
               createdAt: Date.now(),
               id: randomString(10),
+              preview: "",
             })
           }}
           class="inline-flex items-center text-sm 
@@ -134,12 +135,12 @@ export function App<FC>() {
 
   // console.log("testsadfjalsdkfj ", editor?.state);
   useEffect(() => {
-    if (debouncedEditor) {
+    if (debouncedEditor && selectedNoteId) {
       console.log('saving test', debouncedEditor);
       // save
       setNoteContent(selectedNoteId, debouncedEditor)
     }
-  }, [debouncedEditor]);
+  }, [debouncedEditor, selectedNoteId]);
 
   return (
     <div className={'flex flex-col h-full'}>
