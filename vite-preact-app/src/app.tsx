@@ -148,7 +148,7 @@ export function App<FC>() {
       <div class="overflow-auto h-96">
           <div class={""}>
           {page === 'home' && <div class="
-            w-full relative max-w-md mx-auto
+            w-full relative max-w-md
             flex flex-col gap-1
             mx-4
             ">
