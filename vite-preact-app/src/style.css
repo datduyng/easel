@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* color: #f6f6f6;
+    background-color: #2f2f2f; */
+  }
+}
+
+html, body {
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.element-inside-your-body {
+  overflow: auto;
+}
