@@ -18,6 +18,7 @@ const NOTION_SECRET =
 const notionClient = new Client({
   auth: NOTION_SECRET,
   notionVersion: "2021-05-13",
+  baseUrl: "https://exp-tauriapp.vercel.app/api/notion-proxy",
 });
 
 const notionDbId = "436cfb4ce460431ea89f3a11e408e4d2";
