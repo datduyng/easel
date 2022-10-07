@@ -9,11 +9,14 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@notionhq/client": "^2.2.1",
     "@tauri-apps/api": "^1.1.0",
     "@tiptap/core": "^2.0.0-beta.199",
+    "@tiptap/extension-placeholder": "^2.0.0-beta.199",
     "@tiptap/react": "^2.0.0-beta.199",
     "@tiptap/starter-kit": "^2.0.0-beta.199",
     "preact": "^10.10.1",
+    "tw-elements": "^1.0.0-alpha12",
     "use-debounce": "^8.0.4",
     "zustand": "^4.1.1"
   },

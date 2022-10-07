@@ -1,5 +1,5 @@
 module.exports = {
-    purge: ['./index.html', './src/**/*'],
+    purge: ['./index.html', './src/**/*', './node_modules/tw-elements/dist/js/**/*.js',],
     theme: {
         extend: {
             colors: {
@@ -26,5 +26,7 @@ module.exports = {
         },
     },
     variants: {},
-    plugins: [],
+    plugins: [
+        require('tw-elements/dist/plugin'),
+    ],
 }
