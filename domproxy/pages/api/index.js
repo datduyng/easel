@@ -6,5 +6,5 @@ export default async (req, res) => {
     if (method === "OPTIONS") {
         return res.status(200).send("ok");
     }
-    return res.status(200).json({ message: "Hello World" }));
+    return res.status(200).json({ message: "Hello World" });
 };
