@@ -52,7 +52,7 @@ export const createNoteInNotion = async (note: NoteType) => {
     };
 
     return new Promise((resolve, reject) => {
-        return fetch("http://localhost:3001/api/notion?endpoint=https://api.notion.com/v1/pages", {
+        return fetch("https://easel-api.vercel.app/api/notion?endpoint=https://api.notion.com/v1/pages", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -98,7 +98,7 @@ export const updateNoteInNotion = async (notionId: string, note: Partial<NoteTyp
     };
 
     return new Promise((resolve, reject) => {
-        return fetch("http://localhost:3001/api/notion?endpoint=https://api.notion.com/v1/pages/" + notionId, {
+        return fetch("https://easel-api.vercel.app/api/notion?endpoint=https://api.notion.com/v1/pages/" + notionId, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
