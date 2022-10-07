@@ -1,5 +1,4 @@
 import { useState } from "preact/hooks";
-import preactLogo from "./assets/preact.svg";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./app.css";
 import { appWindow } from "@tauri-apps/api/window";
@@ -10,23 +9,12 @@ import TiptabEditor from "./components/tiptap-editor";
 
 let isPinned = false;
 appWindow.listen('tauri://blur', () => {
-  // invoke('hide_window', {
-  //   isPinned,
-  // });
+  invoke('hide_window', {
+    isPinned,
+  });
 })
 
-
-
-
-
 export function App<FC>() {
-  const [greetMsg, setGreetMsg] = useState<string>("");
-  const [name, setName] = useState<string>("");
-
-  const greet = async () => {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
-  };
   const [pining, setPining] = useState<boolean>(false)
   useEffect(() => {
     if (pining) {
@@ -35,20 +23,17 @@ export function App<FC>() {
       isPinned = false;
     }
   }, [pining])
-  // useWindowEvent('tauri://blur', async () => {
-  //   console.log('pinning on blur', pining);
-  //   // @ts-ignore
-  //   if (!pining) {
-  //     await invoke("hide_window")
-  //   }
-  //   return;
-  // }, [pining])
+  useWindowEvent('tauri://blur', async () => {
+    console.log('pinning on blur', pining);
+    // @ts-ignore
+    if (!pining) {
+      await invoke("hide_window")
+    }
+    return;
+  }, [pining])
   console.log('pining', pining);
 
   const pinButton = (<button
-    // width="7rem"
-    // background={pining ? "green.500" : "gray.500"}
-    // color="white"
     onClick={() => {
       setPining(!pining)
     }}
@@ -174,9 +159,6 @@ export function App<FC>() {
 
         </button>
       </div>}
-
-
-
     </div>
   );
 
@@ -215,7 +197,6 @@ function randomString(length: number) {
   for (let i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
   return result;
 }
-
 
 const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
   const [page,
@@ -279,7 +260,6 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
     </div>
   )
 }
-
 
 type RemoveListenerBlock = any
 export function useWindowEvent<Payload>(name: string, callback: (event: any) => void, deps: any[] = []): RemoveListenerBlock {
