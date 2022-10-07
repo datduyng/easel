@@ -5,23 +5,7 @@ import "./app.css";
 import { appWindow } from "@tauri-apps/api/window";
 import React, { useEffect } from 'preact/compat'
 import usePersistedStore, { NoteType } from "./stores/use-persisted-store";
-import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from '@tiptap/extension-placeholder'
-
-import { useDebounce } from 'use-debounce';
-import { Client } from "@notionhq/client";
-
-const NOTION_SECRET =
-  "secret_gu2GH4PoSsLdYuFodvAiecODmA6uu02laooSLUkrMS";
-
-const notionClient = new Client({
-  auth: NOTION_SECRET,
-  notionVersion: "2021-05-13",
-  baseUrl: "https://exp-tauriapp.vercel.app/api/notion-proxy",
-});
-
-const notionDbId = "436cfb4ce460431ea89f3a11e408e4d2";
+import TiptabEditor from "./components/tiptap-editor";
 
 
 let isPinned = false;
@@ -32,83 +16,8 @@ appWindow.listen('tauri://blur', () => {
 })
 
 
-export const createNoteInNotion = async (note: NoteType) => {
-  const response = await notionClient.pages.create({
-    parent: {
-      database_id: notionDbId,
-    },
-    icon: {
-      type: "emoji",
-      emoji: "🗒️",
-    },
-    properties: {
-      Name: {
-        title: [
-          {
-            text: {
-              content: note.content.slice(0, 10),
-            },
-          },
-        ],
-      },
-    },
-    children: [
-      {
-        type: 'paragraph',
-        paragraph: {
-          rich_text: [
-            {
-              type: 'text',
-              text: {
-                content: note.content,
-                link: null,
-              },
-            },
-          ],
-          color: 'default',
-        },
-      },
-    ],
-  });
-
-  return response;
-}
-
-// update note in notion
-export const updateNoteInNotion = async (notionId: string, note: Partial<NoteType>) => {
-  const response = await notionClient.pages.update({
-    page_id: notionId || '',
-    properties: {
-      Name: {
-        title: [
-          {
-            text: {
-              content: note?.content?.slice(0, 10) || "",
-            },
-          },
-        ],
-      },
-      Note: {
-        rich_text: [
-          {
-            type: 'text',
-            text: {
-              content: note?.content || "'",
-              link: null,
-            },
-          },
-        ],
-      }
-    },
-  });
-}
 
 
-export const rteClass =
-  "prose !bg-transparent dark:prose-invert max-w-[calc(100%+2rem)] focus:outline-none pb-4 pt-2 " +
-  "prose-pre:!bg-gray-900 prose-pre:border dark:prose-pre:border-gray-800 dark:prose-code:bg-gray-900 dark:prose-code:border-gray-700 dark:prose-code:text-gray-400 prose-code:bg-gray-100 dark:bg-gray-800 prose-code:font-medium prose-code:font-mono prose-code:rounded-lg prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:text-gray-500 " +
-  "prose-blockquote:border-l-2 prose-blockquote:pl-4 prose-blockquote:text-gray-400 prose-blockquote:not-italic " +
-  "prose-headings:leading-tight prose-headings:tracking-tight prose-h1:text-2xl prose-h1:font-bold prose-h1:font-bold";
 
 export function App<FC>() {
   const [greetMsg, setGreetMsg] = useState<string>("");
@@ -186,7 +95,7 @@ export function App<FC>() {
           onClick={() => {
             addNote({
               title: "new note " + Date.now(),
-              content: "",
+              content: {},
               createdAt: Date.now(),
               id: randomString(10),
               preview: "",
@@ -243,7 +152,7 @@ export function App<FC>() {
                 await createOrUpdateNotionPage(selectedNoteId, toUpdate);
               }
             } catch (e) {
-              console.log('ssaving notion error', e);
+              console.error("[notion] Syncing with notion error", e);
             } finally {
               setLoadingNotion(false);
             }
@@ -271,56 +180,6 @@ export function App<FC>() {
     </div>
   );
 
-
-
-  const editor = useEditor({
-
-    extensions: [
-      StarterKit.configure({
-        // dropcursor: false,
-        // paragraph: false,
-        // heading: false,
-        // blockquote: false,
-        // bulletList: false,
-        // orderedList: false,
-        // horizontalRule: false,
-        // codeBlock: false,
-      }),
-      Placeholder.configure({
-        // Use a placeholder:
-        placeholder: 'Write something …',
-        // Use different placeholders depending on the node type:
-        // placeholder: ({ node }) => {
-        //   if (node.type.name === 'heading') {
-        //     return 'What’s the title?'
-        //   }
-
-        //   return 'Can you add some further context?'
-        // },
-      }),
-
-    ],
-
-    content: `${selectedNoteId ? getNoteContent(selectedNoteId).content : ''}`,
-    editorProps: {
-      attributes: {
-        spellcheck: "false",
-        class: rteClass,
-      },
-    },
-
-  }, [selectedNoteId])
-  const [debouncedEditor] = useDebounce(editor?.getHTML(), 600);
-
-  // console.log("testsadfjalsdkfj ", editor?.state);
-  useEffect(() => {
-    if (debouncedEditor && selectedNoteId) {
-      console.log('saving test', debouncedEditor);
-      // save
-      setNoteContent(selectedNoteId, debouncedEditor)
-    }
-  }, [debouncedEditor, selectedNoteId]);
-
   return (
     <div className={'flex flex-col h-full'}>
       {header}
@@ -340,7 +199,7 @@ export function App<FC>() {
           {page === 'note' && <div class={`
             mx-4 mt-1
           `}>
-            <EditorContent editor={editor} />
+            <TiptabEditor />
           </div>}
         </div>
       </div>
@@ -428,7 +287,7 @@ export function useWindowEvent<Payload>(name: string, callback: (event: any) => 
     let removeListener: RemoveListenerBlock | undefined
 
 
-    console.log('registering event listener')
+    console.info('registering event listener')
     const setUpListener = async () => {
       removeListener = await appWindow.listen(name, event => {
         callback(event)

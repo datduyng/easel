@@ -15,10 +15,22 @@ html, body {
   overflow: hidden;
 }
 
+.ProseMirror h1.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 .ProseMirror p.is-editor-empty:first-child::before {
   color: #adb5bd;
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
+}
+
+.ProseMirror h1 {
+  @apply text-xl font-bold;
 }
