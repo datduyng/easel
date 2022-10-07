@@ -5,11 +5,13 @@ const nextConfig = {
   rewrites: () => {
     return [
       {
-        source: "api/notion-proxy",
+        source: "/api/notion-proxy",
         destination: "https://api.notion.com/v1",
       },
     ];
   }
+  
 }
+
 
 module.exports = nextConfig
