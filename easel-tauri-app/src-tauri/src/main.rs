@@ -111,13 +111,14 @@ fn main() {
           
           // WindowBuilder::decorations(false);
 
-          // #[cfg(debug_assertions)] // only include this code on debug builds
-          // {
-            let window = app.get_window("main").unwrap();
+          let window = app.get_window("main").unwrap();
+          #[cfg(debug_assertions)] // only include this code on debug builds
+          {
+            
             window.open_devtools();
             window.close_devtools();
-            // window.round_corners(10.0, 10.0);
-          // }
+            window.round_corners(10.0, 10.0);
+          }
 
 
         //   #[cfg(target_os = "windows")]
