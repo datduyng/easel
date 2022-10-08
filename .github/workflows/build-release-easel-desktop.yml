@@ -1,4 +1,4 @@
-name: Release
+name: Release Tauri app
 on:
   push:
     tags:
@@ -7,10 +7,12 @@ on:
 
 jobs:
   release:
+    needs: create-release
     strategy:
       fail-fast: false
       matrix:
         platform: [macos-latest, windows-latest]
+        
     runs-on: ${{ matrix.platform }}
     defaults:
       run:
@@ -41,5 +43,6 @@ jobs:
           tagName: v__VERSION__ # tauri-action replaces \_\_VERSION\_\_ with the app version
           releaseName: 'v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
+          releaseId: ${{ needs.create-release.outputs.release_id }}
           releaseDraft: true
-          prerelease: false
+          prerelease: true

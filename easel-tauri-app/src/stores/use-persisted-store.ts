@@ -118,6 +118,8 @@ interface Store {
     notes: NoteType[];
     selectedNoteId: string | null;
     setSelectNoteId: (id: string) => void;
+    selectPreviousNote: () => void;
+    selectNextNote: () => void;
     getNoteMetaById: (id: string) => NoteType | undefined;
     addNote: (note: NoteType) => void;
     page: 'home' | 'note',
@@ -154,6 +156,30 @@ const usePersistedStore = create<Store>()(
             },
             selectedNoteId: null,
             setSelectNoteId: (id: string) => set({ selectedNoteId: id }),
+            selectPreviousNote: () => {
+                const notes = get().notes;
+                const selectedNoteId = get().selectedNoteId;
+                if (!selectedNoteId) {
+                    return;
+                }
+                const index = notes.findIndex((x) => x.id === selectedNoteId);
+                if (index === 0) {
+                    return;
+                }
+                set({ selectedNoteId: notes[index - 1].id });
+            },
+            selectNextNote: () => {
+                const notes = get().notes;
+                const selectedNoteId = get().selectedNoteId;
+                if (!selectedNoteId) {
+                    return;
+                }
+                const index = notes.findIndex((x) => x.id === selectedNoteId);
+                if (index === notes.length - 1) {
+                    return;
+                }
+                set({ selectedNoteId: notes[index + 1].id });
+            },
             addNote: (note) => {
                 const notes = get().notes;
                 get().setNoteContent(note.id, note.content);
@@ -181,7 +207,7 @@ const usePersistedStore = create<Store>()(
             },
             page: 'home',
             setPage: (page) => set({ page }),
-            getNoteContent: (noteId: string) => getLocalStorage(`note:${noteId}`) || {},
+            getNoteContent: (noteId: string) => getLocalStorage(`note:${noteId}`) || { type: 'doc', content: [] },
             setNoteContent: (noteId: string, content: JSONContent) => {
                 const payload = {
                     content,

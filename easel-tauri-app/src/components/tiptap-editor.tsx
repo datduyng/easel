@@ -1,15 +1,41 @@
-import { EditorContent, JSONContent, useEditor } from '@tiptap/react'
+import { EditorContent, Extension, JSONContent, useEditor } from '@tiptap/react'
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from '@tiptap/extension-placeholder'
 import Document from '@tiptap/extension-document'
 import usePersistedStore, { NoteType } from '../stores/use-persisted-store';
 import { useEffect, useState } from 'preact/hooks';
-import { useDebounce } from 'use-debounce';
+// import { useDebounce } from 'use-debounce';
+import debounce from 'lodash.debounce';
+import useHotkey from '../utils/use-hotkey';
 const CustomDocument = Document.extend({
     content: 'heading block*',
 })
 
+const EscShortCutBlurExtension = Extension.create({
+    name: 'customExtension',
 
+    addStorage() {
+        return {
+            awesomeness: 100,
+        }
+    },
+
+    onUpdate() {
+        this.storage.awesomeness += 1
+    },
+    addKeyboardShortcuts() {
+        return {
+            'Escape': () => {
+                console.log('asdfasdf');
+                return this.editor.commands.blur()
+            },
+            "Mod-l": () => {
+                console.log('asdfasdf');
+                return this.editor.commands.focus()
+            },
+        }
+    }
+})
 const TiptabEditor = () => {
     const [editorValue, setEditorValue] = useState<JSONContent>();
 
@@ -36,6 +62,7 @@ const TiptabEditor = () => {
 
     const editor = useEditor({
         extensions: [
+            EscShortCutBlurExtension,
             CustomDocument,
             StarterKit.configure({
                 document: false,
@@ -63,30 +90,49 @@ const TiptabEditor = () => {
 
         ],
 
-        onUpdate: ({ editor: e }) => setEditorValue(e.getJSON()),
+        onUpdate: ({ editor: e }) => {
+            const content = e.getJSON();
+            setEditorValue(content);
+            persistData(content);
+        },
         enablePasteRules: [
             "paragraph",
         ], // disable Markdown when pasting
         enableInputRules: false, // disable Markdown when typing
-        content: selectedNoteId ? getNoteContent(selectedNoteId).content : {},
+        content: selectedNoteId ? getNoteContent(selectedNoteId).content : {
+            type: 'doc',
+            content: [],
+        },
         editorProps: {
             attributes: {
                 spellcheck: "false",
                 class: rteClass,
             },
         },
-    }, [selectedNoteId])
+    }, [selectedNoteId]);
 
-    const [debouncedEditor] = useDebounce(editorValue, 600);
-
-    useEffect(() => {
-        if (debouncedEditor && selectedNoteId) {
-            console.info("[TiptabEditor] Persisting note content", selectedNoteId);
-
-            const d = convertTipTapToNoteType(debouncedEditor);
-            updateNoteMeta(selectedNoteId, d);
+    useHotkey('Esc', () => {
+        setPage('home');
+    })
+    const persistData = debounce((value) => {
+        if (!selectedNoteId) {
+            return;
         }
-    }, [debouncedEditor, selectedNoteId]);
+        console.log('Persisting note', selectedNoteId);
+        const note = convertTipTapToNoteType(value);
+        updateNoteMeta(selectedNoteId, note);
+    }, 600);
+
+    // const [debouncedEditor] = useDebounce(editorValue, 600);
+
+    // useEffect(() => {
+    //     if (debouncedEditor && selectedNoteId) {
+    //         console.info("[TiptabEditor] Persisting note content", selectedNoteId);
+
+    //         const d = convertTipTapToNoteType(debouncedEditor);
+    //         updateNoteMeta(selectedNoteId, d);
+    //     }
+    // }, [debouncedEditor, selectedNoteId]);
 
     return <>
         <EditorContent editor={editor} />
