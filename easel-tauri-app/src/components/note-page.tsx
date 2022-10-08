@@ -135,7 +135,7 @@ const NotePage = () => {
       </div>
     </HeaderLayout>
     <div class={`
-        mx-4 mt-1
+        px-4 mt-1
         `}>
       <TiptabEditor />
     </div>
