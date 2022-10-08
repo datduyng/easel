@@ -4,7 +4,8 @@ const CommonButton = (props: {
     variant?: 'primary' | 'light';
     // button props
     children: preact.ComponentChildren,
-    onClick: JSX.MouseEventHandler<HTMLButtonElement> | undefined,
+    onClick?: JSX.MouseEventHandler<HTMLButtonElement> | undefined,
+    class?: string,
     // the rest of button props
 }) => {
     let buttonStyles = `inline-flex items-center text-sm 
@@ -24,7 +25,7 @@ const CommonButton = (props: {
 
     return (
         <button
-            class={buttonStyles}
+            class={clsx(buttonStyles, props.class)}
             onClick={props.onClick}
         >
             {props.children}

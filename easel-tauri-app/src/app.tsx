@@ -5,8 +5,9 @@ import { appWindow } from "@tauri-apps/api/window";
 import React, { useEffect } from 'preact/compat'
 import usePersistedStore, { NoteType } from "./stores/use-persisted-store";
 import TiptabEditor from "./components/tiptap-editor";
-import { DrawingPinFilledIcon, DrawingPinIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon, ArrowRightIcon, DrawingPinFilledIcon, DrawingPinIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import CommonButton from "./components/common-button";
+import CommonKbd from "./components/common-kbd";
 
 
 let isPinned = false;
@@ -74,8 +75,44 @@ export function App<FC>() {
     state.createOrUpdateNotionPage]);
 
   const [loadingNotion, setLoadingNotion] = useState<boolean>(false);
+  const footer = (
+    <>
+      <Hr />
+
+      <div data-tauri-drag-region class="flex flex-row items-center justify-center px-2" style={{
+        height: '10vh',
+      }}>
+        {/* Floating footer at the end of page */}
+        <div class=" flex flex-row justify-between items-center self-center
+        w-full
+      ">
+          <div>
+            <CommonButton
+              variant="light">
+              <CommonKbd>⌘</CommonKbd>
+              <CommonKbd>
+                <ArrowLeftIcon />
+              </CommonKbd>
+            </CommonButton>
+          </div>
+          <div>
+            <CommonButton
+              variant="light">
+              <CommonKbd>⌘</CommonKbd>
+              <CommonKbd>
+                <ArrowRightIcon />
+              </CommonKbd>
+            </CommonButton>
+          </div>
+        </div>
+      </div>
+    </>
+
+  )
   const header = (
-    <div data-tauri-drag-region>
+    <div data-tauri-drag-region style={{
+      height: '10vh'
+    }}>
       {page === 'home' && <div
         data-tauri-drag-region
         class="
@@ -105,23 +142,16 @@ export function App<FC>() {
         flex flex-row justify-between gap-2
         p-2
       ">
-        <button
+        <CommonButton
+          variant="light"
           onClick={() => {
             setPage('home')
-          }}
-          class="inline-flex items-center text-sm 
-          font-medium relative h-9 px-4 py-2.5 
-          rounded-md border border-transparent 
-          text-white bg-brand-500 hover:bg-brand-400 
-          focus:outline-none focus:ring-2 focus:ring-offset-2 
-          focus:ring-brand-500">
+          }}>
           Back
-        </button>
+        </CommonButton>
 
-        <button
-          style={{
-            height: 40,
-          }}
+        <CommonButton
+          variant="primary"
           onClick={async () => {
             setLoadingNotion(true);
             try {
@@ -145,11 +175,7 @@ export function App<FC>() {
             } finally {
               setLoadingNotion(false);
             }
-          }}
-          class="flex justify-center items-center text-sm 
-          rounded-md py-2 px-3 font-medium 
-          text-gray-600 hover:bg-gray-100 
-          lg:px-[14px]">
+          }}>
           {loadingNotion ? <div class="spinner-grow inline-block w-8 h-8 bg-current rounded-full opacity-0 text-gray-300" role="status">
             <span class="visually-hidden">Loading...</span>
           </div> : <>
@@ -161,7 +187,7 @@ export function App<FC>() {
             </div>
           </>}
 
-        </button>
+        </CommonButton>
       </div>}
     </div>
   );
@@ -171,7 +197,7 @@ export function App<FC>() {
       {header}
       <Hr />
       <div class="overflow-y-auto w-full relative max-w-md" style={{
-        height: 'calc(500px - 52px)'
+        height: 'calc(100vh - 10vh - 10vh)'
       }}>
         <div class={""}>
           {page === 'home' && <div class="
@@ -190,7 +216,7 @@ export function App<FC>() {
           </div>}
         </div>
       </div>
-
+      {footer}
     </div>
   );
 }
@@ -229,7 +255,7 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
           </button>
         </div>
         <div class="flex flex-row gap-2">
-          <CommonButton 
+          <CommonButton
             variant="light"
             onClick={() => {
               setPage('note');
