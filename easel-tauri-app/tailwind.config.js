@@ -19,10 +19,21 @@ module.exports = {
                     900: "#080c13",
                     // DEFAULT: "var(--brand-color)",
                 },
+                brand2: {
+                    100: "#fcfcfc",
+                    300: "#F3F3F3",
+                    500: "#E2E2E2",
+                    600: "#E8E8E8",
+                    1100: "#6F6F6F",
+                }
             },
             fontFamily: {
                 sans: '"Inter", "Lucida Grande", sans-serif',
             },
+            fontSize: {
+                xxs: '0.60rem',
+                xs: '0.75rem',
+            }
         },
     },
     variants: {},

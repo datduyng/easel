@@ -5,14 +5,22 @@ import { appWindow } from "@tauri-apps/api/window";
 import React, { useEffect } from 'preact/compat'
 import usePersistedStore, { NoteType } from "./stores/use-persisted-store";
 import TiptabEditor from "./components/tiptap-editor";
+import { DrawingPinFilledIcon, DrawingPinIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+import CommonButton from "./components/common-button";
 
 
 let isPinned = false;
 appWindow.listen('tauri://blur', () => {
-  invoke('hide_window', {
-    isPinned,
-  });
+  // invoke('hide_window', {
+  //   isPinned,
+  // });
 })
+
+const Hr = () => {
+  return <div class="bg-brand2-300 mx-2" style={{
+    height: 1,
+  }} />;
+}
 
 export function App<FC>() {
   const [pining, setPining] = useState<boolean>(false)
@@ -33,18 +41,19 @@ export function App<FC>() {
   }, [pining])
   console.log('pining', pining);
 
-  const pinButton = (<button
+  const pinButton = (<CommonButton
     onClick={() => {
       setPining(!pining)
     }}
-    class="inline-flex items-center text-sm 
-          font-medium relative h-9 px-4 py-2.5 
-          rounded-md border border-transparent 
-          text-white bg-gray-500 hover:bg-gray-400 
-          focus:outline-none focus:ring-2 focus:ring-offset-2 
-          focus:ring-gray-500">
-    {pining ? "unpin" : "pin"}
-  </button>)
+    variant="light">
+
+    <div>
+      {pining ? "unpin" : "pin"}
+    </div>
+    <div>
+      {pining ? <DrawingPinFilledIcon /> : <DrawingPinIcon />}
+    </div>
+  </CommonButton>)
 
   const [notes,
     addNote,
@@ -72,11 +81,11 @@ export function App<FC>() {
         class="
           flex flex-row justify-end gap-2
           bg-white
-          p-2
+          py-2 px-4
         ">
 
         {pinButton}
-        <button
+        <CommonButton
           onClick={() => {
             addNote({
               title: "new note " + Date.now(),
@@ -86,14 +95,9 @@ export function App<FC>() {
               preview: "",
             })
           }}
-          class="inline-flex items-center text-sm 
-          font-medium relative h-9 px-4 py-2.5 
-          rounded-md border border-transparent 
-          text-white bg-brand-500 hover:bg-brand-400 
-          focus:outline-none focus:ring-2 focus:ring-offset-2 
-          focus:ring-brand-500">
+          variant="primary">
           Add note
-        </button>
+        </CommonButton>
       </div>}
 
       {page === 'note' && <div data-tauri-drag-region
@@ -165,6 +169,7 @@ export function App<FC>() {
   return (
     <div className={'flex flex-col h-full'}>
       {header}
+      <Hr />
       <div class="overflow-y-auto w-full relative max-w-md" style={{
         height: 'calc(500px - 52px)'
       }}>
@@ -211,50 +216,47 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
   return (
     // note list item card with gray border
     <div
-
-
       class="
-      flex
-      flex-col
+      flex flex-col gap-1
       rounded-md
-      border-[1px] border-gray-500
-      h-20 px-3 pt-1
+      border-[1px] border-brand2-300 px-3 py-2 max-h-24
     ">
-      <div class="flex flex-row justify-end">
-        <button class="inline-flex"
-          onClick={() => {
-            setPage('note');
-            setSelectNoteId(note.id);
-          }}>
-          {/* edit icon */}
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24ZM18.5793 19.531C20.6758 17.698 22 15.0036 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.9616 3.28743 17.6225 5.33317 19.4535L6.99999 10.9738H9.17026L12 6.07251L14.8297 10.9738H17L18.5793 19.531ZM16.0919 21.1272L15.2056 12.9738H8.79438L7.90814 21.1272C9.15715 21.688 10.5421 22 12 22C13.4579 22 14.8428 21.688 16.0919 21.1272Z"
-              fill="currentColor"
-            />
-          </svg>
-        </button>
-        {/* delete button */}
-        <button class="inline-flex" onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          deleteNote(note.id);
-        }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M17 6V5C17 3.89543 16.1046 3 15 3H9C7.89543 3 7 3.89543 7 5V6H4C3.44772 6 3 6.44772 3 7C3 7.55228 3.44772 8 4 8H5V19C5 20.6569 6.34315 22 8 22H16C17.6569 22 19 20.6569 19 19V8H20C20.5523 8 21 7.55228 21 7C21 6.44772 20.5523 6 20 6H17ZM15 5H9V6H15V5ZM17 8H7V19C7 19.5523 7.44772 20 8 20H16C16.5523 20 17 19.5523 17 19V8Z" fill="currentColor" /></svg>
-        </button>
+      <div class="flex flex-row justify-between">
+        <div class="flex flex-row items-center justify-center">
+          <button class="
+          bg-brand2-300 rounded-md text-xxs h-6 px-1 text-brand2-1100">
+            Today
+          </button>
+        </div>
+        <div class="flex flex-row gap-2">
+          <CommonButton 
+            variant="light"
+            onClick={() => {
+              setPage('note');
+              setSelectNoteId(note.id);
+            }}>
+
+            <Pencil2Icon height={17} width={17} />
+          </CommonButton>
+          {/* delete button */}
+          <CommonButton
+            variant="light"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              deleteNote(note.id);
+            }}>
+            <TrashIcon height={17} width={17} />
+          </CommonButton>
+        </div>
+
 
       </div>
-      <div>
-
+      <div class="text-sm font-medium">
         {note.title}
+      </div>
+      <div class="text-sm text-brand2-1100">
+        {note.preview}
       </div>
 
     </div>

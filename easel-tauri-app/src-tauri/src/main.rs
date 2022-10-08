@@ -116,7 +116,7 @@ fn main() {
           {
             window.open_devtools();
             window.close_devtools();
-            window.round_corners(10.0, 10.0);
+            // window.round_corners(10.0, 10.0);
           }
 
 
