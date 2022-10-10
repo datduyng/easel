@@ -121,7 +121,7 @@ interface Store {
     selectPreviousNote: () => void;
     selectNextNote: () => void;
     getNoteMetaById: (id: string) => NoteType | undefined;
-    addNote: (note: NoteType) => void;
+    addNote: (note: NoteType) => NoteType;
     page: 'home' | 'note',
     setPage: (page: 'home' | 'note') => void;
     getNoteContent: (id: string) => { content: JSONContent };
@@ -187,6 +187,7 @@ const usePersistedStore = create<Store>()(
 
                 deleteContent(note);
                 set({ notes: [...notes, note] });
+                return note;
             },
             updateNoteMeta: (id, note) => {
                 delete note.id;

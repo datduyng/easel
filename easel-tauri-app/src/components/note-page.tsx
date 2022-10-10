@@ -121,7 +121,8 @@ const NotePage = () => {
           onClick={() => {
             setPage('home')
           }}>
-          Back
+          Back 
+          <CommonKbd>Esc</CommonKbd>
         </CommonButton>
 
         <CommonButton

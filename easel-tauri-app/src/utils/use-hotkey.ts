@@ -11,7 +11,8 @@ export type OMSHotkey =
   | "MovePreviousNote"
   | 'Esc'
   | 'FocusNoteEditor'
-  | 'SaveToNotion';
+  | 'SaveToNotion'
+  | 'AddNewNote';
 
 // check https://www.toptal.com/developers/keycode/for/tab
 export const HotkeyBindings: { [hotkey in OMSHotkey]: HotkeyBindingData } = {
@@ -29,6 +30,9 @@ export const HotkeyBindings: { [hotkey in OMSHotkey]: HotkeyBindingData } = {
   },
   SaveToNotion: {
     hotkey: "Command+s",
+  },
+  AddNewNote: {
+    hotkey: "Command+t",
   },
 };
 

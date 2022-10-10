@@ -7,6 +7,7 @@ import { DrawingPinFilledIcon, DrawingPinIcon, Pencil2Icon, TrashIcon } from "@r
 import CommonButton from "./common-button";
 import Layout from './layout';
 import HeaderLayout from "./header-layout";
+import useHotkey from "../utils/use-hotkey";
 
 let isPinned = false;
 appWindow.listen('tauri://blur', () => {
@@ -43,6 +44,7 @@ const HomePage = () => {
     getNoteContent,
     setNoteContent,
     createOrUpdateNotionPage,
+    setSelectNoteId,
   ] = usePersistedStore(state => [
     state.notes,
     state.addNote,
@@ -51,13 +53,17 @@ const HomePage = () => {
     state.selectedNoteId,
     state.getNoteContent,
     state.setNoteContent,
-    state.createOrUpdateNotionPage]);
+    state.createOrUpdateNotionPage,
+    state.setSelectNoteId,
+  ]);
 
   const pinButton = (<CommonButton
     onClick={() => {
       setPining(!pining)
     }}
-    variant="light">
+    variant="light"
+    tabIndex={-1}
+  >
 
     <div>
       {pining ? "unpin" : "pin"}
@@ -67,6 +73,20 @@ const HomePage = () => {
     </div>
   </CommonButton>)
 
+  const addNewNote = () => {
+    const newNote = addNote({
+      title: "new note " + Date.now(),
+      content: {
+        type: 'doc',
+        content: [],
+      },
+      createdAt: Date.now(),
+      id: randomString(10),
+      preview: "",
+    });
+    setSelectNoteId(newNote.id);
+    setPage("note");
+  };
   const header = (
     <div data-tauri-drag-region style={{
       height: '10vh'
@@ -81,19 +101,10 @@ const HomePage = () => {
 
         {pinButton}
         <CommonButton
-          onClick={() => {
-            addNote({
-              title: "new note " + Date.now(),
-              content: {
-                type: 'doc',
-                content: [],
-              },
-              createdAt: Date.now(),
-              id: randomString(10),
-              preview: "",
-            })
-          }}
-          variant="primary">
+          onClick={addNewNote}
+          variant="primary"
+          tabIndex={-1}
+        >
           Add note
         </CommonButton>
       </div>}
@@ -101,6 +112,9 @@ const HomePage = () => {
 
     </div>
   );
+
+  useHotkey('AddNewNote', addNewNote)
+
   return <Layout>
     <HeaderLayout>
       {header}
@@ -137,6 +151,11 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
     state.setPage,
     state.setSelectNoteId,
     state.deleteNote]);
+
+  const selectNote = () => {
+    setPage('note');
+    setSelectNoteId(note.id);
+  }
   return (
     // note list item card with gray border
     <div
@@ -147,18 +166,18 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
       ">
       <div class="flex flex-row justify-between">
         <div class="flex flex-row items-center justify-center">
-          <button class="
-            bg-brand2-300 rounded-md text-xxs h-6 px-1 text-brand2-1100">
+          <button class="bg-brand2-300 rounded-md text-xxs h-6 px-1 text-brand2-1100"
+            onClick={selectNote}
+          >
             Today
           </button>
         </div>
         <div class="flex flex-row gap-2">
           <CommonButton
             variant="light"
-            onClick={() => {
-              setPage('note');
-              setSelectNoteId(note.id);
-            }}>
+            onClick={selectNote}
+            tabIndex={-1}
+          >
 
             <Pencil2Icon height={17} width={17} />
           </CommonButton>
@@ -169,7 +188,9 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
               e.preventDefault();
               e.stopPropagation();
               deleteNote(note.id);
-            }}>
+            }}
+            tabIndex={-1}
+          >
             <TrashIcon height={17} width={17} />
           </CommonButton>
         </div>
