@@ -9,8 +9,11 @@ export interface HotkeyBindingData {
 export type OMSHotkey =
   | "MoveNextNote"
   | "MovePreviousNote"
-  | 'Esc';
+  | 'Esc'
+  | 'FocusNoteEditor'
+  | 'SaveToNotion';
 
+// check https://www.toptal.com/developers/keycode/for/tab
 export const HotkeyBindings: { [hotkey in OMSHotkey]: HotkeyBindingData } = {
   MovePreviousNote: {
     hotkey: "Command+left",
@@ -20,6 +23,12 @@ export const HotkeyBindings: { [hotkey in OMSHotkey]: HotkeyBindingData } = {
   },
   Esc: {
     hotkey: "Escape",
+  },
+  FocusNoteEditor: {
+    hotkey: "Tab",
+  },
+  SaveToNotion: {
+    hotkey: "Command+s",
   },
 };
 

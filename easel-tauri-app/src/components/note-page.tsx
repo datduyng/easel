@@ -10,7 +10,7 @@ import usePersistedStore, { NoteType } from "../stores/use-persisted-store";
 import { useState } from "preact/compat";
 
 const NotePage = () => {
-  
+
   const [
     notes,
     addNote,
@@ -34,6 +34,34 @@ const NotePage = () => {
     state.selectPreviousNote,
     state.selectNextNote,
   ]);
+
+
+  const saveToNotion = async () => {
+    setLoadingNotion(true);
+    try {
+      if (selectedNoteId) {
+
+        const toUpdate: Partial<NoteType> = {
+        }
+
+        if (getNoteContent(selectedNoteId)?.content) {
+          toUpdate.content = getNoteContent(selectedNoteId)?.content
+        }
+        const note = notes.find(n => n.id === selectedNoteId);
+        if (note) {
+          toUpdate.preview = note.preview
+        }
+
+        await createOrUpdateNotionPage(selectedNoteId, toUpdate);
+      }
+    } catch (e) {
+      console.error("[notion] Syncing with notion error", e);
+    } finally {
+      setLoadingNotion(false);
+      return true;
+    }
+  }
+
   useHotkey('MovePreviousNote', () => {
     selectPreviousNote();
   });
@@ -41,6 +69,8 @@ const NotePage = () => {
   useHotkey('MoveNextNote', () => {
     selectNextNote();
   });
+
+  useHotkey('SaveToNotion', saveToNotion);
 
   const footer = (
     <>
@@ -96,30 +126,7 @@ const NotePage = () => {
 
         <CommonButton
           variant="primary"
-          onClick={async () => {
-            setLoadingNotion(true);
-            try {
-              if (selectedNoteId) {
-
-                const toUpdate: Partial<NoteType> = {
-                }
-
-                if (getNoteContent(selectedNoteId)?.content) {
-                  toUpdate.content = getNoteContent(selectedNoteId)?.content
-                }
-                const note = notes.find(n => n.id === selectedNoteId);
-                if (note) {
-                  toUpdate.preview = note.preview
-                }
-
-                await createOrUpdateNotionPage(selectedNoteId, toUpdate);
-              }
-            } catch (e) {
-              console.error("[notion] Syncing with notion error", e);
-            } finally {
-              setLoadingNotion(false);
-            }
-          }}>
+          onClick={saveToNotion}>
           {loadingNotion ? <div class="spinner-grow inline-block w-8 h-8 bg-current rounded-full opacity-0 text-gray-300" role="status">
             <span class="visually-hidden">Loading...</span>
           </div> : <>
@@ -137,7 +144,7 @@ const NotePage = () => {
     <div class={`
         px-4 mt-1
         `}>
-      <TiptabEditor />
+      <TiptabEditor saveToNotion={saveToNotion}/>
     </div>
     <FooterLayout>
       {footer}

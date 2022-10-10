@@ -4,7 +4,6 @@
 )]
 
 
-use window_shadows::set_shadow;
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -20,11 +19,6 @@ use tauri::Manager;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
 fn add_task(content: String) {
   let path = env::var("FOCUS_TASKS_PATH").expect("The 'FOCUS_TASKS_PATH' env variable was not found!");
   let mut file = OpenOptions::new()
@@ -38,21 +32,12 @@ fn add_task(content: String) {
 #[tauri::command]
 fn hide_window(app_handle: tauri::AppHandle, is_pinned: bool) {
   if !is_pinned{
-  let window = app_handle.get_window("main").unwrap();
-  let tray_handle = app_handle.tray_handle();
-  let menu_item = tray_handle.get_item("toggle");
-  window.hide();
-  menu_item.set_title("Show");
+    let window = app_handle.get_window("main").unwrap();
+    let tray_handle = app_handle.tray_handle();
+    let menu_item = tray_handle.get_item("toggle");
+    window.hide();
+    menu_item.set_title("Show");
   }
-}
-
-fn show_window(window: tauri::Window, tray_handle: tauri::SystemTrayHandle) {
-  let menu_item = tray_handle.get_item("toggle");
-        window.show();
-        window.center();
-        window.set_skip_taskbar(true);
-        window.set_focus();
-        menu_item.set_title("Hide");
 }
 
 fn make_tray() -> SystemTray {

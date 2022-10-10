@@ -8,165 +8,180 @@ import { useEffect, useState } from 'preact/hooks';
 import debounce from 'lodash.debounce';
 import useHotkey from '../utils/use-hotkey';
 const CustomDocument = Document.extend({
-    content: 'heading block*',
+  content: 'heading block*',
 })
 
 const EscShortCutBlurExtension = Extension.create({
-    name: 'customExtension',
+  name: 'customExtension',
 
-    addStorage() {
-        return {
-            awesomeness: 100,
-        }
-    },
-
-    onUpdate() {
-        this.storage.awesomeness += 1
-    },
-    addKeyboardShortcuts() {
-        return {
-            'Escape': () => {
-                console.log('asdfasdf');
-                return this.editor.commands.blur()
-            },
-            "Mod-l": () => {
-                console.log('asdfasdf');
-                return this.editor.commands.focus()
-            },
-        }
+  addStorage() {
+    return {
+      awesomeness: 100,
     }
+  },
+
+  onUpdate() {
+    this.storage.awesomeness += 1
+  },
+  addKeyboardShortcuts() {
+    return {
+
+    }
+  }
 })
-const TiptabEditor = () => {
-    const [editorValue, setEditorValue] = useState<JSONContent>();
+const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
+  const [editorValue, setEditorValue] = useState<JSONContent>();
 
-    const [notes,
-        addNote,
-        page,
-        setPage,
-        selectedNoteId,
-        getNoteContent,
-        setNoteContent,
-        createOrUpdateNotionPage,
-        updateNoteMeta,
-    ] = usePersistedStore(state => [
-        state.notes,
-        state.addNote,
-        state.page,
-        state.setPage,
-        state.selectedNoteId,
-        state.getNoteContent,
-        state.setNoteContent,
-        state.createOrUpdateNotionPage,
-        state.updateNoteMeta,
-    ]);
+  const [notes,
+    addNote,
+    page,
+    setPage,
+    selectedNoteId,
+    getNoteContent,
+    setNoteContent,
+    createOrUpdateNotionPage,
+    updateNoteMeta,
+  ] = usePersistedStore(state => [
+    state.notes,
+    state.addNote,
+    state.page,
+    state.setPage,
+    state.selectedNoteId,
+    state.getNoteContent,
+    state.setNoteContent,
+    state.createOrUpdateNotionPage,
+    state.updateNoteMeta,
+  ]);
 
-    const editor = useEditor({
-        extensions: [
-            EscShortCutBlurExtension,
-            CustomDocument,
-            StarterKit.configure({
-                document: false,
-                // dropcursor: false,
-                // paragraph: false,
-                // heading: true,
-                // blockquote: false,
-                // bulletList: false,
-                // orderedList: false,
-                // horizontalRule: false,
-                // codeBlock: false,
-            }),
-            Placeholder.configure({
-                // Use a placeholder:
-                // placeholder: 'Write something …',
-                // Use different placeholders depending on the node type:
-                placeholder: ({ node }) => {
-                    if (node.type.name === 'heading') {
-                        return 'Start writing a title …'
-                    }
 
-                    return 'Start writing ...'
-                },
-            }),
-
-        ],
-
-        onUpdate: ({ editor: e }) => {
-            const content = e.getJSON();
-            setEditorValue(content);
-            persistData(content);
-        },
-        enablePasteRules: [
-            "paragraph",
-        ], // disable Markdown when pasting
-        enableInputRules: false, // disable Markdown when typing
-        content: selectedNoteId ? getNoteContent(selectedNoteId).content : {
-            type: 'doc',
-            content: [],
-        },
-        editorProps: {
-            attributes: {
-                spellcheck: "false",
-                class: rteClass,
+  const editor = useEditor({
+    extensions: [
+      EscShortCutBlurExtension.extend({
+        addKeyboardShortcuts() {
+          return {
+            'Escape': () => {
+              console.log('asdfasdf');
+              return this.editor.commands.blur()
             },
-        },
-    }, [selectedNoteId]);
-
-    useHotkey('Esc', () => {
-        setPage('home');
-    })
-    const persistData = debounce((value) => {
-        if (!selectedNoteId) {
-            return;
+            // "Mod-l": () => {
+            //   console.log('asdfasdf');
+            //   return this.editor.commands.focus()
+            // },
+            'Mod-s': () => {
+              console.log(",sadfasd'")
+              return saveToNotion();
+            },
+          }
         }
-        console.log('Persisting note', selectedNoteId);
-        const note = convertTipTapToNoteType(value);
-        updateNoteMeta(selectedNoteId, note);
-    }, 600);
+      }),
+      CustomDocument,
+      StarterKit.configure({
+        document: false,
+        // dropcursor: false,
+        // paragraph: false,
+        // heading: true,
+        // blockquote: false,
+        // bulletList: false,
+        // orderedList: false,
+        // horizontalRule: false,
+        // codeBlock: false,
+      }),
+      Placeholder.configure({
+        // Use a placeholder:
+        // placeholder: 'Write something …',
+        // Use different placeholders depending on the node type:
+        placeholder: ({ node }) => {
+          if (node.type.name === 'heading') {
+            return 'Start writing a title …'
+          }
 
-    // const [debouncedEditor] = useDebounce(editorValue, 600);
+          return 'Start writing ...'
+        },
+      }),
 
-    // useEffect(() => {
-    //     if (debouncedEditor && selectedNoteId) {
-    //         console.info("[TiptabEditor] Persisting note content", selectedNoteId);
+    ],
 
-    //         const d = convertTipTapToNoteType(debouncedEditor);
-    //         updateNoteMeta(selectedNoteId, d);
-    //     }
-    // }, [debouncedEditor, selectedNoteId]);
+    onUpdate: ({ editor: e }) => {
+      const content = e.getJSON();
+      setEditorValue(content);
+      persistData(content);
+    },
+    enablePasteRules: [
+      "paragraph",
+    ], // disable Markdown when pasting
+    enableInputRules: false, // disable Markdown when typing
+    content: selectedNoteId ? getNoteContent(selectedNoteId).content : {
+      type: 'doc',
+      content: [],
+    },
+    editorProps: {
+      attributes: {
+        spellcheck: "false",
+        class: rteClass,
+      },
+    },
+  }, [selectedNoteId]);
 
-    return <>
-        <EditorContent editor={editor} />
-    </>
+  useHotkey('Esc', () => {
+    setPage('home');
+  })
+  useHotkey('FocusNoteEditor', () => {
+    editor?.commands.focus('end');
+  });
+
+  const persistData = debounce((value) => {
+    if (!selectedNoteId) {
+      return;
+    }
+    console.log('Persisting note', selectedNoteId);
+    const note = convertTipTapToNoteType(value);
+    updateNoteMeta(selectedNoteId, note);
+  }, 600);
+
+  // const [debouncedEditor] = useDebounce(editorValue, 600);
+
+  // useEffect(() => {
+  //     if (debouncedEditor && selectedNoteId) {
+  //         console.info("[TiptabEditor] Persisting note content", selectedNoteId);
+
+  //         const d = convertTipTapToNoteType(debouncedEditor);
+  //         updateNoteMeta(selectedNoteId, d);
+  //     }
+  // }, [debouncedEditor, selectedNoteId]);
+
+  return <>
+    <EditorContent editor={editor} />
+  </>
 }
 
 
 const convertTipTapToNoteType = (content: JSONContent) => {
-    if (!content?.content) {
-        return {};
-    }
+  if (!content?.content) {
+    return {};
+  }
 
-    let title: string = "";
-    for (const node of content.content) {
-        if (!title?.trim() && node.type === 'heading') {
-            title = node.content?.[0].text || "Untitled";
-            break;
-        }
+  let title: string = "";
+  for (const node of content.content) {
+    if (!title?.trim() && node.type === 'heading') {
+      title = node.content?.[0].text || "Untitled";
+      break;
     }
+  }
 
-    return {
-        title,
-        content,
-    } as Partial<NoteType>;
+  return {
+    title,
+    content,
+  } as Partial<NoteType>;
 }
 
 
 
 
 export const rteClass =
-    "prose !bg-transparent dark:prose-invert max-w-[calc(100%+2rem)] focus:outline-none pb-4 pt-2 " +
-    "prose-pre:!bg-gray-900 prose-pre:border dark:prose-pre:border-gray-800 dark:prose-code:bg-gray-900 dark:prose-code:border-gray-700 dark:prose-code:text-gray-400 prose-code:bg-gray-100 dark:bg-gray-800 prose-code:font-medium prose-code:font-mono prose-code:rounded-lg prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:text-gray-500 " +
-    "prose-blockquote:border-l-2 prose-blockquote:pl-4 prose-blockquote:text-gray-400 prose-blockquote:not-italic " +
-    "prose-headings:leading-tight prose-headings:tracking-tight prose-h1:text-2xl prose-h1:font-bold prose-h1:font-bold";
+  "prose !bg-transparent dark:prose-invert max-w-[calc(100%+2rem)] focus:outline-none pb-4 pt-2 " +
+  "prose-pre:!bg-gray-900 prose-pre:border dark:prose-pre:border-gray-800 dark:prose-code:bg-gray-900 dark:prose-code:border-gray-700 dark:prose-code:text-gray-400 prose-code:bg-gray-100 dark:bg-gray-800 prose-code:font-medium prose-code:font-mono prose-code:rounded-lg prose-code:px-1.5 prose-code:py-0.5 prose-code:border prose-code:text-gray-500 " +
+  "prose-blockquote:border-l-2 prose-blockquote:pl-4 prose-blockquote:text-gray-400 prose-blockquote:not-italic " +
+  "prose-headings:leading-tight prose-headings:tracking-tight prose-h1:text-2xl prose-h1:font-bold prose-h1:font-bold";
 
 
 export default TiptabEditor;
