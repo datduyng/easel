@@ -6,7 +6,7 @@ const CommonKbd = ({ children }: {
         <kbd class="
             flex items-center justify-center
             bg-brand2-300 color-brand2-1100
-            h-5 w-5
+            h-5 px-1
             rounded-sm 
         ">
             {children}

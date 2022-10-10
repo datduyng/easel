@@ -6,6 +6,7 @@ const CommonButton = (props: {
     children: preact.ComponentChildren,
     onClick?: JSX.MouseEventHandler<HTMLButtonElement> | undefined,
     class?: string,
+    tabIndex?: number,
     // the rest of button props
 }) => {
     let buttonStyles = `inline-flex items-center text-sm 
@@ -27,6 +28,7 @@ const CommonButton = (props: {
         <button
             class={clsx(buttonStyles, props.class)}
             onClick={props.onClick}
+            tabIndex={props.tabIndex}
         >
             {props.children}
         </button>
