@@ -145,7 +145,7 @@ const NotePage = () => {
     <div class={`
         px-4 mt-1
         `}>
-      <TiptabEditor saveToNotion={saveToNotion}/>
+      <TiptabEditor saveToNotion={saveToNotion as any}/>
     </div>
     <FooterLayout>
       {footer}
