@@ -9,24 +9,14 @@ use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::env;
 use std::process;
-use std::io::prelude::*;
-use std::fs::OpenOptions;
-use std::fmt;
-
 
 use tauri::*;
 use tauri::Manager;
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn add_task(content: String) {
-  let path = env::var("FOCUS_TASKS_PATH").expect("The 'FOCUS_TASKS_PATH' env variable was not found!");
-  let mut file = OpenOptions::new()
-    .create(true)
-    .append(true)
-    .open(path)
-    .expect("Error while opening the tasks file");
-  writeln!(file, "{}", content).expect("Error while writing in the tasks file")
+fn set_always_on_top(app_handle: tauri::AppHandle, is_always_on_top: bool) {
+  let window = app_handle.get_window("main").unwrap();
+  window.set_always_on_top(is_always_on_top);
 }
 
 #[tauri::command]
@@ -36,13 +26,13 @@ fn hide_window(app_handle: tauri::AppHandle, is_pinned: bool) {
     let tray_handle = app_handle.tray_handle();
     let menu_item = tray_handle.get_item("toggle");
     window.hide();
-    menu_item.set_title("Show");
+    menu_item.set_title("Show Easel");
   }
 }
 
 fn make_tray() -> SystemTray {
   let menu = SystemTrayMenu::new()
-    .add_item(CustomMenuItem::new("toggle".to_string(), "Hide"))
+    .add_item(CustomMenuItem::new("toggle".to_string(), "Show Easel"))
     .add_item(CustomMenuItem::new("quit".to_string(), "Quit"));
   return SystemTray::new().with_menu(menu);
 }
@@ -58,15 +48,15 @@ fn handle_tray_event(app_handle: &AppHandle, event: SystemTrayEvent) {
       let menu_item = tray_handle.get_item("toggle");
       if window.is_visible().unwrap() {        
         window.hide();
-        menu_item.set_title("Show");
+        menu_item.set_title("Show Easel");
       } else {
         window.show();
         window.center();
         window.set_skip_taskbar(true);
         window.set_focus();
-        window.set_always_on_top(true);
+        // window.set_always_on_top(true);
         // window.set_cursor_grab(true);
-        menu_item.set_title("Hide");
+        menu_item.set_title("Hide Easel");
       }
     }
   }
@@ -91,7 +81,11 @@ fn main() {
     let mut app = tauri::Builder::default()
         .system_tray(make_tray())
         .on_system_tray_event(handle_tray_event)
-        .invoke_handler(tauri::generate_handler![on_button_clicked, hide_window])
+        .invoke_handler(tauri::generate_handler![
+          on_button_clicked, 
+          hide_window, 
+          set_always_on_top
+        ])
         .setup(|app| {
           
           // WindowBuilder::decorations(false);

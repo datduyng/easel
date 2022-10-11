@@ -9,31 +9,16 @@ import Layout from './layout';
 import HeaderLayout from "./header-layout";
 import useHotkey from "../utils/use-hotkey";
 
-let isPinned = false;
-appWindow.listen('tauri://blur', () => {
-  invoke('hide_window', {
-    isPinned,
-  });
-})
-
 
 const HomePage = () => {
   const [pining, setPining] = useState<boolean>(false)
-  useEffect(() => {
-    if (pining) {
-      isPinned = true;
-    } else {
-      isPinned = false;
-    }
-  }, [pining])
-  useWindowEvent('tauri://blur', async () => {
-    console.log('pinning on blur', pining);
-    // @ts-ignore
-    if (!pining) {
-      await invoke("hide_window")
-    }
-    return;
-  }, [pining])
+  const toggleAlwaysOnTop = async () => {
+    const isAlwaysOnTop = !pining;
+    await invoke("set_always_on_top", {
+      isAlwaysOnTop,
+    });
+    setPining(isAlwaysOnTop);
+  };
 
   const [
     notes,
@@ -58,13 +43,10 @@ const HomePage = () => {
   ]);
 
   const pinButton = (<CommonButton
-    onClick={() => {
-      setPining(!pining)
-    }}
+    onClick={toggleAlwaysOnTop}
     variant="light"
     tabIndex={-1}
   >
-
     <div>
       {pining ? "unpin" : "pin"}
     </div>

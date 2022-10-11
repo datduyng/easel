@@ -1,4 +1,3 @@
-
 import "./app.css";
 import usePersistedStore, { NoteType } from "./stores/use-persisted-store";
 import NotePage from "./components/note-page";
