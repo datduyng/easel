@@ -56,11 +56,31 @@ const HomePage = () => {
   </CommonButton>)
 
   const addNewNote = () => {
+    // get current date in MM/DD/YYYY
+    const date = new Date()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const year = date.getFullYear()
+    const dateStr = `${month}/${day}/${year}`
+    const title = `Note ${dateStr}`
     const newNote = addNote({
-      title: "new note " + Date.now(),
+      title,
       content: {
         type: 'doc',
-        content: [],
+        content: [
+          {
+            type: "heading",
+            attrs: {
+              level: 1,
+            },
+            content: [
+              {
+                type: "text",
+                text: title,
+              },
+            ],
+          }
+        ],
       },
       createdAt: Date.now(),
       id: randomString(10),
@@ -106,7 +126,8 @@ const HomePage = () => {
               flex flex-col gap-1
               mx-4 mt-1
               ">
-      {notes.map((note, index) => {
+      {/* display notes in reverse order */}
+      {notes.slice().reverse().map((note, index) => {
         return <NoteListItem key={note.id} note={note} />
       })}
     </div>
@@ -124,7 +145,8 @@ function randomString(length: number) {
 }
 
 const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
-  const [page,
+  const [
+    page,
     setPage,
     setSelectNoteId,
     deleteNote,
@@ -150,8 +172,8 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
         <div class="flex flex-row items-center justify-center">
           <button class="bg-brand2-300 rounded-md text-xxs h-6 px-1 text-brand2-1100"
             onClick={selectNote}
-          >
-            Today
+          > 
+            {note.createdAt ? formatTimeAgo(note.createdAt) : "No date"}
           </button>
         </div>
         <div class="flex flex-row gap-2">
@@ -217,5 +239,28 @@ export function useWindowEvent<Payload>(name: string, callback: (event: any) => 
   }, [callback, ...deps])
 }
 
+const formatter = new Intl.RelativeTimeFormat(undefined, {
+  numeric: 'auto'
+})
+
+function formatTimeAgo(dateUtcNumber: number) {
+  console.log('dateUtcNumber', dateUtcNumber)
+  // duration
+  let duration = Date.now() - dateUtcNumber
+
+  // get days ago 
+  const daysAgo = Math.floor(duration / (1000 * 60 * 60 * 24))
+  if (daysAgo >= 0 && daysAgo <= 7) {
+    return formatter.format(-daysAgo, 'days')
+  }
+
+
+  // convert date utc number into date string MM/DD/YYYY
+  const date = new Date(dateUtcNumber)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const year = date.getFullYear()
+  return `${month}/${day}/${year}`
+}
 
 export default HomePage;
