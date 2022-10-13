@@ -47,7 +47,7 @@ const NotePage = () => {
         if (getNoteContent(selectedNoteId)?.content) {
           toUpdate.content = getNoteContent(selectedNoteId)?.content
         }
-        const note = notes.find(n => n.id === selectedNoteId);
+        const note = notes.find(n => n.noteId === selectedNoteId);
         if (note) {
           toUpdate.preview = note.preview
         }
@@ -71,6 +71,7 @@ const NotePage = () => {
   });
 
   useHotkey('SaveToNotion', saveToNotion);
+
 
   const footer = (
     <>

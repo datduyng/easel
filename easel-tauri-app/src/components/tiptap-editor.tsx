@@ -2,11 +2,12 @@ import { EditorContent, Extension, JSONContent, useEditor } from '@tiptap/react'
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from '@tiptap/extension-placeholder'
 import Document from '@tiptap/extension-document'
-import usePersistedStore, { NoteType } from '../stores/use-persisted-store';
+import usePersistedStore, { baseUrl, NoteType } from '../stores/use-persisted-store';
 import { useEffect, useState } from 'preact/hooks';
 // import { useDebounce } from 'use-debounce';
 import debounce from 'lodash.debounce';
 import useHotkey from '../utils/use-hotkey';
+import useSWR from 'swr';
 const CustomDocument = Document.extend({
   content: 'heading block*',
 })
@@ -60,15 +61,9 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
         addKeyboardShortcuts() {
           return {
             'Escape': () => {
-              console.log('asdfasdf');
               return this.editor.commands.blur()
             },
-            // "Mod-l": () => {
-            //   console.log('asdfasdf');
-            //   return this.editor.commands.focus()
-            // },
             'Mod-s': () => {
-              console.log(",sadfasd'")
               return saveToNotion();
             },
           }
@@ -133,21 +128,27 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
     if (!selectedNoteId) {
       return;
     }
-    console.log('Persisting note', selectedNoteId);
     const note = convertTipTapToNoteType(value);
-    updateNoteMeta(selectedNoteId, note);
+    updateNoteMeta(selectedNoteId, note, true);
   }, 600);
 
-  // const [debouncedEditor] = useDebounce(editorValue, 600);
+  const { data, error } = useSWR(`/api/notes/${selectedNoteId}`, () => fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
+    .then(res => res.json())
+    .then(data => {
+      const defaultContent = {
+        type: 'doc',
+        content: [],
+      };
+      if (data && data.content) {
+        editor?.commands.setContent(data.content || defaultContent);
 
-  // useEffect(() => {
-  //     if (debouncedEditor && selectedNoteId) {
-  //         console.info("[TiptabEditor] Persisting note content", selectedNoteId);
-
-  //         const d = convertTipTapToNoteType(debouncedEditor);
-  //         updateNoteMeta(selectedNoteId, d);
-  //     }
-  // }, [debouncedEditor, selectedNoteId]);
+      }
+      updateNoteMeta(selectedNoteId || '', {
+        content: data.content || defaultContent,
+      }, false);
+      return data;
+    })
+  );
 
   return <>
     <EditorContent editor={editor} />

@@ -26,8 +26,7 @@ function runMiddleware(
 }
 
 
-const NOTION_SECRET =
-    "secret_gu2GH4PoSsLdYuFodvAiecODmA6uu02laooSLUkrMSP";
+const NOTION_SECRET = process.env.NOTION_SECRET;
 
 const notionClient = new Client({
     auth: NOTION_SECRET,
@@ -53,7 +52,6 @@ export default async function handler(req, res) {
                 body: JSON.stringify(req.body),
             });
             const json = await result.json();
-            console.log('json', json);
             return res
                 .status(result.status)
                 .json(json);

@@ -134,12 +134,12 @@ apply_blur(&window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'appl
       async_runtime::spawn(async move {
         
         app_handle.global_shortcut_manager()
-        .register("CmdOrCtrl+Shift+e", move || {
+        .register("CmdOrCtrl+Shift+k", move || {
           let app_handle = app_handle.clone();
           let tray_handle = app_handle.tray_handle();
           let menu_item = tray_handle.get_item("toggle");
           let window = app_handle.get_window("main").unwrap();
-    if window.is_visible().unwrap() {        
+    if window.is_visible().unwrap() {
       window.hide();
       menu_item.set_title("Show Easel (⌘+Shift+e)");
     } else {

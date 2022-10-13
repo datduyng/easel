@@ -2,12 +2,13 @@ import { useState } from "preact/hooks";
 import { invoke } from "@tauri-apps/api/tauri";
 import { appWindow } from "@tauri-apps/api/window";
 import React, { useEffect } from 'preact/compat'
-import usePersistedStore, { NoteType } from "../stores/use-persisted-store";
+import usePersistedStore, { baseUrl, NoteType } from "../stores/use-persisted-store";
 import { DrawingPinFilledIcon, DrawingPinIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import CommonButton from "./common-button";
 import Layout from './layout';
 import HeaderLayout from "./header-layout";
 import useHotkey from "../utils/use-hotkey";
+import useSWR from "swr";
 
 
 const HomePage = () => {
@@ -30,6 +31,7 @@ const HomePage = () => {
     setNoteContent,
     createOrUpdateNotionPage,
     setSelectNoteId,
+    setNotes,
   ] = usePersistedStore(state => [
     state.notes,
     state.addNote,
@@ -40,6 +42,7 @@ const HomePage = () => {
     state.setNoteContent,
     state.createOrUpdateNotionPage,
     state.setSelectNoteId,
+    state.setNotes,
   ]);
 
   const pinButton = (<CommonButton
@@ -83,10 +86,10 @@ const HomePage = () => {
         ],
       },
       createdAt: Date.now(),
-      id: randomString(10),
+      noteId: randomString(20),
       preview: "",
     });
-    setSelectNoteId(newNote.id);
+    setSelectNoteId(newNote.noteId);
     setPage("note");
   };
   const header = (
@@ -117,6 +120,17 @@ const HomePage = () => {
 
   useHotkey('AddNewNote', addNewNote)
 
+  useSWR('/api/notes', () => fetch(`${baseUrl}/api/notes?lightData`)
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.length > 0) {
+        setNotes(data)
+      }
+      // setNotes(data);
+      return data
+    })
+  );
+
   return <Layout>
     <HeaderLayout>
       {header}
@@ -128,7 +142,7 @@ const HomePage = () => {
               ">
       {/* display notes in reverse order */}
       {notes.slice().reverse().map((note, index) => {
-        return <NoteListItem key={note.id} note={note} />
+        return <NoteListItem key={note.noteId} note={note} />
       })}
     </div>
   </Layout>
@@ -158,7 +172,7 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
 
   const selectNote = () => {
     setPage('note');
-    setSelectNoteId(note.id);
+    setSelectNoteId(note.noteId);
   }
   return (
     // note list item card with gray border
@@ -191,7 +205,7 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              deleteNote(note.id);
+              deleteNote(note.noteId);
             }}
             tabIndex={-1}
           >
@@ -244,7 +258,6 @@ const formatter = new Intl.RelativeTimeFormat(undefined, {
 })
 
 function formatTimeAgo(dateUtcNumber: number) {
-  console.log('dateUtcNumber', dateUtcNumber)
   // duration
   let duration = Date.now() - dateUtcNumber
 

@@ -3,17 +3,28 @@ import create from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Client } from "@notionhq/client";
 import { JSONContent } from '@tiptap/core';
+import debounce from 'lodash.debounce';
 
-const NOTION_SECRET =
-    "secret_gu2GH4PoSsLdYuFodvAiecODmA6uu02laooSLUkrMS";
+// isDEv
+const isDev = process.env.NODE_ENV === 'development';
 
-// const notionClient = new Client({
-//     auth: NOTION_SECRET,
-//     notionVersion: "2021-05-13",
-//     baseUrl: "http://localhost:3000/api?endpoint=https://api.notion.com",
-// });
+export const baseUrl = isDev ? "http://localhost:3000" : "https://easel-api.vercel.app";
 
 const notionDbId = "f36eba38aa3f413786fad37c690e474c";
+
+// debounce fetch remote
+const updateNoteRemote = debounce(async (note: NoteType) => fetch(`${baseUrl}/api/notes`, {
+    method: 'PUT',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(note),
+}), 1000);
+
+function omit(key: string, obj: any) {
+    const { [key]: omitted, ...rest } = obj;
+    return rest;
+  }
 
 export const createNoteInNotion = async (note: NoteType) => {
 
@@ -52,7 +63,7 @@ export const createNoteInNotion = async (note: NoteType) => {
     };
 
     return new Promise((resolve, reject) => {
-        return fetch("https://easel-api.vercel.app/api/notion?endpoint=https://api.notion.com/v1/pages", {
+        return fetch(`${baseUrl}/api/notion?endpoint=https://api.notion.com/v1/pages`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -116,6 +127,7 @@ export const updateNoteInNotion = async (notionId: string, note: Partial<NoteTyp
 interface Store {
     test: string;
     notes: NoteType[];
+    setNotes: (notes: NoteType[]) => void;
     selectedNoteId: string | null;
     setSelectNoteId: (id: string) => void;
     selectPreviousNote: () => void;
@@ -126,18 +138,19 @@ interface Store {
     setPage: (page: 'home' | 'note') => void;
     getNoteContent: (id: string) => { content: JSONContent };
     setNoteContent: (id: string, content: JSONContent) => void;
-    updateNoteMeta: (id: string, note: Partial<NoteType>) => void;
+    updateNoteMeta: (id: string, note: Partial<NoteType>, shouldPersistRemote: boolean) => void;
     deleteNote: (id: string) => void;
     createOrUpdateNotionPage: (id: string, note: Partial<NoteType>) => void;
 }
 
 export interface NoteType {
-    id: string;
+    noteId: string;
     notionId?: string;
     title: string;
     preview: string;
     content: JSONContent;
     createdAt: number;
+    _id?: string; // back end mongodb id
 }
 
 
@@ -151,8 +164,11 @@ const usePersistedStore = create<Store>()(
         (set, get) => ({
             test: 'test',
             notes: [],
+            setNotes: (notes) => {
+                set({ notes });
+            },
             getNoteMetaById(id) {
-                return get().notes.find((x) => x.id === id);
+                return get().notes.find((x) => x.noteId === id);
             },
             selectedNoteId: null,
             setSelectNoteId: (id: string) => set({ selectedNoteId: id }),
@@ -162,11 +178,11 @@ const usePersistedStore = create<Store>()(
                 if (!selectedNoteId) {
                     return;
                 }
-                const index = notes.findIndex((x) => x.id === selectedNoteId);
+                const index = notes.findIndex((x) => x.noteId === selectedNoteId);
                 if (index === 0) {
                     return;
                 }
-                set({ selectedNoteId: notes[index - 1].id });
+                set({ selectedNoteId: notes[index - 1].noteId });
             },
             selectNextNote: () => {
                 const notes = get().notes;
@@ -174,36 +190,68 @@ const usePersistedStore = create<Store>()(
                 if (!selectedNoteId) {
                     return;
                 }
-                const index = notes.findIndex((x) => x.id === selectedNoteId);
+                const index = notes.findIndex((x) => x.noteId === selectedNoteId);
                 if (index === notes.length - 1) {
                     return;
                 }
-                set({ selectedNoteId: notes[index + 1].id });
+                set({ selectedNoteId: notes[index + 1].noteId });
             },
             addNote: (note) => {
                 const notes = get().notes;
-                get().setNoteContent(note.id, note.content);
+                get().setNoteContent(note.noteId, note.content);
                 note.preview = note.content.content?.find(x => x.type !== 'heading')?.text?.slice(0, 50) || "";
+                // create new note remote 
+                fetch(`${baseUrl}/api/notes`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(note)
+                })
+                    ?.then((res) => res.json())
+                    .then((data) => {
+                        console.log("Added data remotely");
+                    }).catch((err) => {
+                        console.error("[addNote] error", err);
+                    });
 
                 deleteContent(note);
                 set({ notes: [...notes, note] });
                 return note;
             },
-            updateNoteMeta: (id, note) => {
-                delete note.id;
+            updateNoteMeta: (id, note, shouldPersistRemote) => {
+                delete note.noteId;
                 const notes = get().notes;
-                const noteIndex = notes.findIndex((note) => note.id === id);
+                const noteIndex = notes.findIndex((note) => note.noteId === id);
 
-                if (note.content) {
-                    note.preview = note.content.content?.find(x => x.type !== 'heading')?.text?.slice(0, 50) || "";
-                    get().setNoteContent(id, note.content);
-                    deleteContent(note);
-                }
-
-                notes[noteIndex] = {
+                const updatedNote = {
                     ...notes[noteIndex],
                     ...note,
                 };
+                
+                if (updatedNote.content) {
+                    updatedNote.preview = updatedNote.content.content?.find(x => x.type !== 'heading')?.text?.slice(0, 50) || "";
+                    get().setNoteContent(id, updatedNote.content);
+                }
+                const updatedRemoteNote = {
+                    ...updatedNote,
+                };
+
+                if (shouldPersistRemote) {
+                    updateNoteRemote(updatedRemoteNote)
+                    ?.then((res) => res.json())
+                    .then((data) => {
+                        console.log("updated note remotely");
+                    }).catch((err) => {
+                        console.error("[addNote] error", err);
+                    });
+                }
+
+
+                omit('content', updatedNote)
+
+                deleteContent(updatedNote);
+                notes[noteIndex] = updatedNote;
                 set({ notes: [...notes] });
             },
             page: 'home',
@@ -218,7 +266,7 @@ const usePersistedStore = create<Store>()(
             },
             deleteNote: (id: string) => {
                 const notes = get().notes;
-                const noteIndex = notes.findIndex((note) => note.id === id);
+                const noteIndex = notes.findIndex((note) => note.noteId === id);
                 notes.splice(noteIndex, 1);
                 if (noteIndex !== -1) {
                     removeLocalStorageByKey(`note:${id}`);
@@ -227,10 +275,10 @@ const usePersistedStore = create<Store>()(
                 set({ notes: [...notes] });
             },
             async createOrUpdateNotionPage(id, updatedNote) {
-                delete updatedNote.id;
+                delete updatedNote.noteId;
 
                 const notes = get().notes;
-                const noteInDb = notes.find((note) => note.id === id);
+                const noteInDb = notes.find((note) => note.noteId === id);
                 if (noteInDb) {
                     const notionId = noteInDb.notionId;
                     if (notionId) {
@@ -247,7 +295,7 @@ const usePersistedStore = create<Store>()(
                         });
 
                         const notionId = (response as any).id;
-                        get().updateNoteMeta(id, { notionId });
+                        get().updateNoteMeta(id, { notionId }, true);
                     }
                 }
             },
