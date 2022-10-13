@@ -18,7 +18,7 @@ const Layout: preact.FunctionalComponent = ({ children }) => {
     return <div className={'flex flex-col h-full'}>
         {headers}
         <Hr />
-        <div class="overflow-y-auto w-full relative max-w-md mx-auto" style={{
+        <div class="overflow-y-auto w-full relative mx-auto" style={{
             height: `calc(100vh - 10vh ${footers.length > 0 ? '- 10vh' : ''})`,
         }}>
             {getChildrenByTypeAndIgnore(children, [HeaderLayout, FooterLayout])}
