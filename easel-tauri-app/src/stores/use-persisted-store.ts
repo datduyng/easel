@@ -24,7 +24,7 @@ const updateNoteRemote = debounce(async (note: NoteType) => fetch(`${baseUrl}/ap
 function omit(key: string, obj: any) {
     const { [key]: omitted, ...rest } = obj;
     return rest;
-  }
+}
 
 export const createNoteInNotion = async (note: NoteType) => {
 
@@ -228,7 +228,7 @@ const usePersistedStore = create<Store>()(
                     ...notes[noteIndex],
                     ...note,
                 };
-                
+
                 if (updatedNote.content) {
                     updatedNote.preview = updatedNote.content.content?.find(x => x.type !== 'heading')?.text?.slice(0, 50) || "";
                     get().setNoteContent(id, updatedNote.content);
@@ -239,12 +239,12 @@ const usePersistedStore = create<Store>()(
 
                 if (shouldPersistRemote) {
                     updateNoteRemote(updatedRemoteNote)
-                    ?.then((res) => res.json())
-                    .then((data) => {
-                        console.log("updated note remotely");
-                    }).catch((err) => {
-                        console.error("[addNote] error", err);
-                    });
+                        ?.then((res) => res.json())
+                        .then((data) => {
+                            console.log("updated note remotely");
+                        }).catch((err) => {
+                            console.error("[addNote] error", err);
+                        });
                 }
 
 
@@ -271,6 +271,20 @@ const usePersistedStore = create<Store>()(
                 if (noteIndex !== -1) {
                     removeLocalStorageByKey(`note:${id}`);
                 }
+
+                // delete note remote
+                fetch(`${baseUrl}/api/notes?id=${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                })
+                    ?.then((res) => res.json())
+                    .then((data) => {
+                        console.log("Deleted data remotely");
+                    }).catch((err) => {
+                        console.error("[addNote] error", err);
+                    });
 
                 set({ notes: [...notes] });
             },
@@ -318,6 +332,10 @@ const convertTipTapToPlainText = (content?: JSONContent) => {
         if (nodes[i].type === 'paragraph') {
             text += (nodes[i].content?.[0].text || "") + "\n";
         }
+        // convert todo list to plain text
+        // if (nodes[i].type === 'todo_list') {
+        //     text += (nodes[i].content?.[0].text || "") + "\n";
+        // }
     }
 
     return text;
