@@ -264,7 +264,18 @@ function formatTimeAgo(dateUtcNumber: number) {
   // get days ago 
   const daysAgo = Math.floor(duration / (1000 * 60 * 60 * 24))
   if (daysAgo >= 0 && daysAgo <= 7) {
-    return formatter.format(-daysAgo, 'days')
+    if (daysAgo === 0) {
+      // get minutes or hours ago
+      const minutesAgo = Math.floor(duration / (1000 * 60))
+      if (minutesAgo < 60) {
+        return formatter.format(-minutesAgo, 'minute')
+      } else {
+        const hoursAgo = Math.floor(duration / (1000 * 60 * 60))
+        return formatter.format(-hoursAgo, 'hour')
+      }
+    } else {
+      return formatter.format(-daysAgo, 'day')
+    }
   }
 
 
