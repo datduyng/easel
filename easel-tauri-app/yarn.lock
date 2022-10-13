@@ -363,6 +363,11 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
+"@tabler/icons@^1.103.0":
+  version "1.103.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-1.103.0.tgz#d112adc9301b229ceca99fd87949b0df56de79f8"
+  integrity sha512-oXUNf/Bn+88Xm+uWVht9MRRB/usDtjNrzKr7XhlB1P6V4vpWdG68OMffEONDbFqvEMC/eGYfhLI/PUHsR2XN4A==
+
 "@tauri-apps/api@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.1.0.tgz#2c5756f6aeecd36f7683183eaba021690711bedf"
@@ -563,10 +568,25 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-strike/-/extension-strike-2.0.0-beta.199.tgz#5fc6e067728009d92027e58a042f18449f2fa264"
   integrity sha512-KyN5+d9o9FGvrSiSuh81oo4+XjMDsZVY4UHc9lBY0nAzaGAkJOwkCjk40RfyO5ZJ2GdEEQ6Nh/3YqVMcJTY+rA==
 
+"@tiptap/extension-task-item@^2.0.0-beta.199":
+  version "2.0.0-beta.199"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-task-item/-/extension-task-item-2.0.0-beta.199.tgz#a877dc249b13588f774c50183b1054c6361851b3"
+  integrity sha512-dvMgXr4B/V8dYvksLtbby3R2wM9zk3xdkOBuohTLQuRq73dK12Bh/h5xrl4cey8i/2tQBWgUfFiGVPsEUJjQCQ==
+
+"@tiptap/extension-task-list@^2.0.0-beta.199":
+  version "2.0.0-beta.199"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-task-list/-/extension-task-list-2.0.0-beta.199.tgz#93e14ce92dbdc4224138cc1207836d4c8c97fb67"
+  integrity sha512-//1bw2Wd4IYKxYLw3iaxBcd0/iFw1Jwc/Q1j41oBc5QTZDuRxhEO/5Gjy1UmEZsWhsH39bS2za4uMBX4DbHBUQ==
+
 "@tiptap/extension-text@^2.0.0-beta.199":
   version "2.0.0-beta.199"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-text/-/extension-text-2.0.0-beta.199.tgz#0204f3e50622e39b6fd08b5ef72fe7d0199117f5"
   integrity sha512-ntOqEhkBjDHrdzxvpPe4U1JB5GgE9/yyWqWdgzSL9lpSndRTJN1xQLOmyuv0qsLqOgBHn1YITHvaxPb3t8FrFw==
+
+"@tiptap/extension-typography@^2.0.0-beta.199":
+  version "2.0.0-beta.199"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-typography/-/extension-typography-2.0.0-beta.199.tgz#68b586964f0185ad65ba24b44033fd207fa36010"
+  integrity sha512-AdpTg/FgPmW3tJb5UGCOo19qh6wC6gQGqMVuDEdm2sErXlhcaoOKxfRgPfamRFTBRDNTarjRwl6Xh2r61eWQ1Q==
 
 "@tiptap/react@^2.0.0-beta.199":
   version "2.0.0-beta.199"
@@ -601,6 +621,15 @@
     "@tiptap/extension-paragraph" "^2.0.0-beta.199"
     "@tiptap/extension-strike" "^2.0.0-beta.199"
     "@tiptap/extension-text" "^2.0.0-beta.199"
+
+"@tiptap/suggestion@^2.0.0-beta.199":
+  version "2.0.0-beta.199"
+  resolved "https://registry.yarnpkg.com/@tiptap/suggestion/-/suggestion-2.0.0-beta.199.tgz#8bf8029a25826bc41266bb9fffe8b33195bf9a40"
+  integrity sha512-FwkaMW0fX1Xlsv4n5GPlVkHwwMSMvIXgZ6LZnwy4Mxo+Njz7YgHw8X8YQo927lMbYsVHYhNcsk726HaxudDMEw==
+  dependencies:
+    prosemirror-model "^1.18.1"
+    prosemirror-state "^1.4.1"
+    prosemirror-view "^1.28.2"
 
 "@types/lodash.debounce@^4.0.7":
   version "4.0.7"

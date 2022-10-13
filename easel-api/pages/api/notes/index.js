@@ -42,6 +42,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'id is required' });
         }
         note.userId = userId;
+        delete note._id;
 
         // const result = await db.collection('notes')
         //     .replaceOne({ noteId: note.noteId }, note);

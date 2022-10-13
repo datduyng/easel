@@ -2,13 +2,24 @@ import { EditorContent, Extension, JSONContent, useEditor } from '@tiptap/react'
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from '@tiptap/extension-placeholder'
 import Document from '@tiptap/extension-document'
+import Suggestion from '@tiptap/suggestion'
 import usePersistedStore, { baseUrl, NoteType } from '../stores/use-persisted-store';
 import { useEffect, useState } from 'preact/hooks';
 // import { useDebounce } from 'use-debounce';
 import debounce from 'lodash.debounce';
 import useHotkey from '../utils/use-hotkey';
 import useSWR from 'swr';
+import { SlashCommands } from './tiptap-editor-plugins/slash-command';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import Text from '@tiptap/extension-text'
+import Typography from '@tiptap/extension-typography'
+import Code from '@tiptap/extension-code'
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
 const CustomDocument = Document.extend({
+  //heading, ordered list, bulleted list
+  // content: 'heading block*',
   content: 'heading block*',
 })
 
@@ -30,6 +41,7 @@ const EscShortCutBlurExtension = Extension.create({
     }
   }
 })
+
 const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
   const [editorValue, setEditorValue] = useState<JSONContent>();
 
@@ -54,9 +66,39 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
     state.updateNoteMeta,
   ]);
 
+  useHotkey('Esc', () => {
+    setPage('home');
+  })
+  useHotkey('FocusNoteEditor', () => {
+    editor?.commands.focus('end');
+  });
+
+  const persistData = debounce((value) => {
+    if (!selectedNoteId) {
+      return;
+    }
+    const note = convertTipTapToNoteType(value);
+    updateNoteMeta(selectedNoteId, note, true);
+  }, 600);
+
+  const { data, error } = useSWR(`/api/notes/${selectedNoteId}`, () => fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
+    .then(res => res.json())
+    .then(data => {
+      const defaultContent = {
+        type: 'doc',
+        content: [],
+      };
+      return (data.content || defaultContent) as JSONContent;
+    })
+  );
 
   const editor = useEditor({
     extensions: [
+      Code,
+      Typography,
+      TaskList,
+      TaskItem,
+      SlashCommands,
       EscShortCutBlurExtension.extend({
         addKeyboardShortcuts() {
           return {
@@ -65,6 +107,12 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
             },
             'Mod-s': () => {
               return saveToNotion();
+            },
+            'Tab': (editor) => {
+              // Do whatever you want here...
+              this.editor.chain().insertContent('    ').run();
+
+              return true // <- make sure to return true to prevent the tab from blurring.
             },
           }
         }
@@ -105,7 +153,7 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
       "paragraph",
     ], // disable Markdown when pasting
     enableInputRules: false, // disable Markdown when typing
-    content: selectedNoteId ? getNoteContent(selectedNoteId).content : {
+    content: data || {
       type: 'doc',
       content: [],
     },
@@ -115,40 +163,7 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
         class: rteClass,
       },
     },
-  }, [selectedNoteId]);
-
-  useHotkey('Esc', () => {
-    setPage('home');
-  })
-  useHotkey('FocusNoteEditor', () => {
-    editor?.commands.focus('end');
-  });
-
-  const persistData = debounce((value) => {
-    if (!selectedNoteId) {
-      return;
-    }
-    const note = convertTipTapToNoteType(value);
-    updateNoteMeta(selectedNoteId, note, true);
-  }, 600);
-
-  const { data, error } = useSWR(`/api/notes/${selectedNoteId}`, () => fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
-    .then(res => res.json())
-    .then(data => {
-      const defaultContent = {
-        type: 'doc',
-        content: [],
-      };
-      if (data && data.content) {
-        editor?.commands.setContent(data.content || defaultContent);
-
-      }
-      updateNoteMeta(selectedNoteId || '', {
-        content: data.content || defaultContent,
-      }, false);
-      return data;
-    })
-  );
+  }, [selectedNoteId, data]);
 
   return <>
     <EditorContent editor={editor} />
