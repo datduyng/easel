@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 
 const CommonButton = (props: {
-    variant?: 'primary' | 'light';
+    variant?: 'primary' | 'light' | 'custom';
     // button props
     children: preact.ComponentChildren,
     onClick?: JSX.MouseEventHandler<HTMLButtonElement> | undefined,
@@ -21,6 +21,8 @@ const CommonButton = (props: {
         relative h-9 px-2
         rounded-md
         text-brand2-1100 hover:bg-brand2-300 focus:outline-none`;
+    } else if (props.variant === 'custom') {
+        buttonStyles = '';
     }
 
 

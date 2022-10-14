@@ -94,7 +94,7 @@ const HomePage = () => {
   };
   const header = (
     <div data-tauri-drag-region style={{
-      height: '10vh'
+      // height: '10vh'
     }}>
       {page === 'home' && <div
         data-tauri-drag-region
