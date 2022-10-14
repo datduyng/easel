@@ -40,10 +40,22 @@ export const Commands = Extension.create<CommandsOption>({
     return {
       suggestion: {
         char: "/",
-        startOfLine: false,
-        command: ({ editor, range, props }: any) => {
+        startOfLine: true,
+        command: ({ editor, range, props }) => {
           props.command({ editor, range });
         },
+        allow({ editor, range }) {
+
+          // get parent node of the current cursor or range
+          const parent = editor.state.doc.resolve(range.from).parent;
+          console.log('parent', parent);
+          if (parent
+            && parent.type.name === 'codeBlock') {
+            return false;
+          }
+
+          return true;
+        }
       },
     };
   },

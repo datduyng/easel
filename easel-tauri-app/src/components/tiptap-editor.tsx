@@ -16,8 +16,6 @@ import TaskItem from '@tiptap/extension-task-item';
 import Text from '@tiptap/extension-text'
 import Typography from '@tiptap/extension-typography'
 import Code from '@tiptap/extension-code'
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
 const CustomDocument = Document.extend({
   //heading, ordered list, bulleted list
   // content: 'heading block*',
@@ -100,8 +98,8 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
   const editor = useEditor({
     extensions: [
       Link.configure({
-        // openOnClick: true,
-          autolink: true,
+        openOnClick: true,
+        autolink: true,
       }),
       Code,
       Typography,
