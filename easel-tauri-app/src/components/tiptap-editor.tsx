@@ -2,6 +2,7 @@ import { EditorContent, Extension, JSONContent, useEditor } from '@tiptap/react'
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from '@tiptap/extension-placeholder'
 import Document from '@tiptap/extension-document'
+import Link from '@tiptap/extension-link'
 import Suggestion from '@tiptap/suggestion'
 import usePersistedStore, { baseUrl, NoteType } from '../stores/use-persisted-store';
 import { useEffect, useState } from 'preact/hooks';
@@ -98,6 +99,10 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
 
   const editor = useEditor({
     extensions: [
+      Link.configure({
+        // openOnClick: true,
+          autolink: true,
+      }),
       Code,
       Typography,
       TaskList,
