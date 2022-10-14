@@ -83,12 +83,16 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
 
   const { data, error } = useSWR(`/api/notes/${selectedNoteId}`, () => fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
     .then(res => res.json())
-    .then(data => {
+    .then(res => {
       const defaultContent = {
         type: 'doc',
         content: [],
       };
-      return (data.content || defaultContent) as JSONContent;
+      if (res?.content) {
+        return (res.content || defaultContent) as JSONContent;
+      }
+
+      return selectedNoteId ? getNoteContent(selectedNoteId).content : defaultContent;
     })
   );
 
