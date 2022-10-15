@@ -230,7 +230,7 @@ const usePersistedStore = create<Store>()(
                 };
 
                 if (updatedNote.content) {
-                    updatedNote.preview = updatedNote.content.content?.find(x => x.type !== 'heading' 
+                    updatedNote.preview = updatedNote.content.content?.find(x => x.type !== 'heading'
                         && x.content?.[0].type === 'text')
                         ?.content?.[0].text?.substring(0, 50) || "";
                     get().setNoteContent(id, updatedNote.content);
@@ -331,16 +331,48 @@ const convertTipTapToPlainText = (content?: JSONContent) => {
     let text = "";
     const nodes = content.content;
     for (let i = 1; i < nodes.length; i++) {
-        if (nodes[i].type === 'paragraph') {
-            text += (nodes[i].content?.[0].text || "") + "\n";
+        switch (nodes[i].type) {
+            case 'paragraph':
+                text += resolveNestedTag(nodes[i]) + "\n";
+                break;
+            case 'codeBlock': {
+                text += "```\n" + resolveNestedTag(nodes[i]) + "\n```\n";
+                break;
+            }
+            case 'taskList': {
+                // consolidate all taskItem nodes in taskList
+                const taskItemNodes = nodes[i].content?.filter(x => x.type === 'taskItem') || [];
+                text += taskItemNodes.map(resolveTaskItem).join('\n') + "\n";
+                break;
+            }
+            default: {
+                text += resolveNestedTag(nodes[i]) + "\n";
+                break;
+            }
         }
-        // convert todo list to plain text
-        // if (nodes[i].type === 'todo_list') {
-        //     text += (nodes[i].content?.[0].text || "") + "\n";
-        // }
     }
-
+    console.log('text', text);
     return text;
+}
+
+const resolveNestedTag = (node: JSONContent) => {
+    switch (node.type) {
+        case 'paragraph':
+        case 'codeBlock':
+            return node.content?.map(x => x.text).join(' ') || '';
+        default:
+            return "";
+    }
+}
+
+const resolveTaskItem = (node: JSONContent) => {
+    let text: string;
+    if (node.type === 'taskItem') {
+        text = node.content?.map(resolveNestedTag).join(' ') || "";
+        const checked = node.attrs?.checked ? 'x' : '';
+        return `- [${checked}] ${text}`;
+    }
+    return '';
 }
 
 const convertTipTapToBlocks = (content: JSONContent) => {
@@ -351,6 +383,7 @@ const convertTipTapToBlocks = (content: JSONContent) => {
     let text = [];
     const nodes = content.content;
     for (let i = 1; i < nodes.length; i++) {
+        console.log("nodes[i]", nodes[i].type);
         if (nodes[i].type === 'paragraph') {
             text.push({
                 type: 'paragraph',

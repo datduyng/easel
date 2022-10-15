@@ -78,6 +78,7 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
     }
     const note = convertTipTapToNoteType(value);
     updateNoteMeta(selectedNoteId, note, true);
+    saveToNotion();
   }, 600);
 
   const { data, error } = useSWR(`/api/notes/${selectedNoteId}`, () => fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
