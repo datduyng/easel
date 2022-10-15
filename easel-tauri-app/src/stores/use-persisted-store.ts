@@ -230,7 +230,9 @@ const usePersistedStore = create<Store>()(
                 };
 
                 if (updatedNote.content) {
-                    updatedNote.preview = updatedNote.content.content?.find(x => x.type !== 'heading')?.text?.slice(0, 50) || "";
+                    updatedNote.preview = updatedNote.content.content?.find(x => x.type !== 'heading' 
+                        && x.content?.[0].type === 'text')
+                        ?.content?.[0].text?.substring(0, 50) || "";
                     get().setNoteContent(id, updatedNote.content);
                 }
                 const updatedRemoteNote = {
