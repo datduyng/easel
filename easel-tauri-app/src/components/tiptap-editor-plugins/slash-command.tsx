@@ -48,7 +48,6 @@ export const Commands = Extension.create<CommandsOption>({
 
           // get parent node of the current cursor or range
           const parent = editor.state.doc.resolve(range.from).parent;
-          console.log('parent', parent);
           if (parent
             && parent.type.name === 'codeBlock') {
             return false;
