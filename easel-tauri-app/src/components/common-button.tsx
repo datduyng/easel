@@ -23,7 +23,7 @@ const CommonButton = (props: {
         text-brand2-1100 hover:bg-brand2-300 focus:outline-none`;
     } else if (props.variant === 'custom') {
         buttonStyles = '';
-    }
+    } 
 
 
     return (

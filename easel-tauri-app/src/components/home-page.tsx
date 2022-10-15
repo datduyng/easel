@@ -186,7 +186,7 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
         <div class="flex flex-row items-center justify-center">
           <button class="bg-brand2-300 rounded-md text-xxs h-6 px-1 text-brand2-1100"
             onClick={selectNote}
-          > 
+          >
             {note.createdAt ? formatTimeAgo(note.createdAt) : "No date"}
           </button>
         </div>
@@ -200,17 +200,47 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
             <Pencil2Icon height={17} width={17} />
           </CommonButton>
           {/* delete button */}
-          <CommonButton
-            variant="light"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              deleteNote(note.noteId);
-            }}
-            tabIndex={-1}
-          >
-            <TrashIcon height={17} width={17} />
-          </CommonButton>
+
+
+          <div class='relative'>
+            <CommonButton
+              variant="light"
+              tabIndex={-1}
+              class="peer transition-all duration-200"
+            >
+              <TrashIcon height={17} width={17} />
+            </CommonButton>
+            {/* <button class="bg-sky-600 p-2 font-bold text-gray-100 rounded-md peer focus:bg-sky-400 focus:text-gray-200   ">Dropdown</button> */}
+            <div class='w-36 right-9 -top-1 absolute z-10
+		after:content-[""] after:inline-block after:absolute after:top-0 
+    after:bg-white/40
+		after:w-full after:h-full after:-z-20 after:blur-[2px] after:rounded-md
+    peer-focus:opacity-100 peer-focus:visible 
+    transition-all duration-300 invisible  opacity-0 
+    '>
+              {/* <ul class='flex flex-col gap-3'> */}
+                <div class='flex flex-row justify-center items-center gap-1
+                cursor-pointer bg-white shadow-md p-1  rounded-md text-sm text-brand-1100'>
+                  <CommonButton variant="light" class="h-6">
+                    Cancel
+                  </CommonButton>
+                  <CommonButton 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      
+                      deleteNote(note.noteId);
+                    }}
+                    variant="custom" 
+                    class="h-6 bg-red-500 hover:opacity-90 text-white text-sm px-2 rounded-md">
+                    Confirm
+                  </CommonButton>
+                </div>
+              {/* </ul> */}
+            </div>
+          </div>
+
+
         </div>
 
 
