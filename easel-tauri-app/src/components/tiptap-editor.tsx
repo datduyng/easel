@@ -113,7 +113,7 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
               persistData(remoteData.content);
               return remoteData.content;
             }
-            console.info('[tiptap-editor] local content is newer');
+            console.info('[tiptap-editor] local content is newer ', 'remote', remoteData, 'local', localNoteMeta);
           }
 
           return localContent;
