@@ -84,7 +84,29 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
   // }, 1000);
   const defaultContent = {
     type: 'doc',
-    content: [],
+    content: [
+      {
+        type: 'heading',
+        attrs: {
+          level: 1,
+        },
+        content: [
+          {
+            type: 'text',
+            text: 'Hello World!',
+          }
+        ]
+      },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: 'Hello World!',
+          },
+        ],
+      }
+    ],
   };
   const localContent = selectedNoteId ? getNoteContent(selectedNoteId).content : defaultContent;
   const [data, setData] = useState<JSONContent>(localContent);
@@ -100,6 +122,8 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
 
       console.info('[tiptap-editor] fetching new data from remote');
 
+      console.log('localContent', JSON.stringify(localContent));
+
       // use data from remote if local is older
       fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
         .then(res => res.json())
@@ -108,7 +132,7 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
             // compare local content with remote content
             const localNoteMeta = getNoteMetaById(selectedNoteId!);
             // when remote have more fresh data
-            if (localNoteMeta?.updatedAt && remoteData.updatedAt > localNoteMeta.updatedAt
+            if ((localNoteMeta?.updatedAt && remoteData.updatedAt > localNoteMeta.updatedAt)
 
               // for backward compatibility
               || (!localNoteMeta?.updatedAt && !remoteData?.updatedAt)) {
