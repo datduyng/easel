@@ -107,13 +107,17 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
           if (remoteData?.content) {
             // compare local content with remote content
             const localNoteMeta = getNoteMetaById(selectedNoteId!);
-            if (localNoteMeta?.updatedAt && remoteData.updatedAt > localNoteMeta.updatedAt) {
+            // when remote have more fresh data
+            if (localNoteMeta?.updatedAt && remoteData.updatedAt > localNoteMeta.updatedAt
+
+              // for backward compatibility
+              || (!localNoteMeta?.updatedAt && !remoteData?.updatedAt)) {
               setData(remoteData.content);
               console.info("[tiptap-editor] using remote data");
               persistData(remoteData.content);
               return remoteData.content;
             }
-            console.info('[tiptap-editor] local content is newer ', 'remote', JSON.stringify(remoteData), 'local', JSON.stringify(localNoteMeta));
+            console.info('[tiptap-editor] local content is newer ');
           }
 
           return localContent;
