@@ -100,19 +100,25 @@ const HomePage = () => {
       {page === 'home' && <div
         data-tauri-drag-region
         class="
-              flex flex-row justify-end gap-2
+              flex flex-row justify-between gap-2
               bg-white
               py-2 px-4
             ">
+        <div class="flex flex-row justify-between items-center relative text-gray-600 gap-2">
+          <input class=" inline-block border-2 border-gray-200 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
+            type="search" name="search" placeholder="Type something to search ... " />
+        </div>
 
-        {pinButton}
-        <CommonButton
-          onClick={addNewNote}
-          variant="primary"
-          tabIndex={-1}
-        >
-          Add note
-        </CommonButton>
+        <div>
+          {pinButton}
+          <CommonButton
+            onClick={addNewNote}
+            variant="primary"
+            tabIndex={-1}
+          >
+            Add note
+          </CommonButton>
+        </div>
       </div>}
 
 
@@ -170,7 +176,7 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
     state.setPage,
     state.setSelectNoteId,
     state.deleteNote]);
-  
+
   const selectNote = () => {
     setPage('note');
     setSelectNoteId(note.noteId);
@@ -220,23 +226,23 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
     transition-all duration-300 invisible  opacity-0 
     '>
               {/* <ul class='flex flex-col gap-3'> */}
-                <div class='flex flex-row justify-center items-center gap-1
+              <div class='flex flex-row justify-center items-center gap-1
                 cursor-pointer bg-white shadow-md p-1  rounded-md text-sm text-brand-1100'>
-                  <CommonButton variant="light" class="h-6">
-                    Cancel
-                  </CommonButton>
-                  <CommonButton 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      
-                      deleteNote(note.noteId);
-                    }}
-                    variant="custom" 
-                    class="h-6 bg-red-500 hover:opacity-90 text-white text-sm px-2 rounded-md">
-                    Confirm
-                  </CommonButton>
-                </div>
+                <CommonButton variant="light" class="h-6">
+                  Cancel
+                </CommonButton>
+                <CommonButton
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    deleteNote(note.noteId);
+                  }}
+                  variant="custom"
+                  class="h-6 bg-red-500 hover:opacity-90 text-white text-sm px-2 rounded-md">
+                  Confirm
+                </CommonButton>
+              </div>
               {/* </ul> */}
             </div>
           </div>
