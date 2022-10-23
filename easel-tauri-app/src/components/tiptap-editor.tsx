@@ -122,7 +122,7 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
 
       console.info('[tiptap-editor] fetching new data from remote');
 
-      console.log('localContent', JSON.stringify(localContent));
+      console.info('localContent', JSON.stringify(localContent));
 
       // use data from remote if local is older
       fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
