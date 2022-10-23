@@ -125,7 +125,7 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
       console.info('localContent', JSON.stringify(localContent));
 
       // use data from remote if local is older
-      fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
+      await fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
         .then(res => res.json())
         .then(remoteData => {
           if (remoteData?.content) {
@@ -141,7 +141,7 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
               persistData(remoteData.content);
               return remoteData.content;
             }
-            console.info('[tiptap-editor] local content is newer ', 'remoteiiiiii', JSON.stringify(remoteData), 'local', JSON.stringify(localNoteMeta), 'localcontent', localContent);
+            console.info('[tiptap-editor] local content is newer ', 'remoteiiiiii', JSON.stringify(remoteData), 'local', JSON.stringify(localNoteMeta), 'localcontent', JSON.stringify(localContent));
           }
 
           return localContent;
