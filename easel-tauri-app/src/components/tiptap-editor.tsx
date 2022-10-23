@@ -132,7 +132,7 @@ const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; se
             // compare local content with remote content
             const localNoteMeta = getNoteMetaById(selectedNoteId!);
             // when remote have more fresh data
-            if ((localNoteMeta?.updatedAt && remoteData.updatedAt > localNoteMeta.updatedAt)
+            if ((localNoteMeta?.updatedAt && remoteData.updatedAt >= localNoteMeta.updatedAt)
 
               // for backward compatibility
               || (!localNoteMeta?.updatedAt && !remoteData?.updatedAt)) {
