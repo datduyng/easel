@@ -8,6 +8,8 @@ import FooterLayout from "./footer-layout";
 import HeaderLayout from "./header-layout";
 import usePersistedStore, { NoteType } from "../stores/use-persisted-store";
 import { useState } from "preact/compat";
+import debounce from "lodash.debounce";
+import { JSONContent } from "@tiptap/react";
 
 const NotePage = () => {
 
@@ -22,6 +24,7 @@ const NotePage = () => {
     createOrUpdateNotionPage,
     selectPreviousNote,
     selectNextNote,
+    updateNoteMeta
   ] = usePersistedStore(state => [
     state.notes,
     state.addNote,
@@ -33,11 +36,28 @@ const NotePage = () => {
     state.createOrUpdateNotionPage,
     state.selectPreviousNote,
     state.selectNextNote,
+    state.updateNoteMeta,
   ]);
+  
 
+  const [editorSnapshot, setEditorSnapshot] = useState<JSONContent>([]);
 
+  const persistData = debounce<(value: JSONContent) => void>((value) => {
+    if (!selectedNoteId) {
+      return;
+    }
+    console.info("note-page persiting data")
+    setLoadingSync(true);
+    const note = convertTipTapToNoteType(value);
+    updateNoteMeta(selectedNoteId, note, true, () => {
+      setLoadingSync(false);
+    });
+    // saveToNotion();
+  }, 1000);
+
+/*
   const saveToNotion = async () => {
-    setLoadingNotion(true);
+    setLoadingSync(true);
     try {
       if (selectedNoteId) {
 
@@ -57,11 +77,11 @@ const NotePage = () => {
     } catch (e) {
       console.error("[notion] Syncing with notion error", e);
     } finally {
-      setLoadingNotion(false);
+      setLoadingSync(false);
       return true;
     }
   }
-
+*/
   useHotkey('MovePreviousNote', () => {
     selectPreviousNote();
   });
@@ -70,7 +90,7 @@ const NotePage = () => {
     selectNextNote();
   });
 
-  useHotkey('SaveToNotion', saveToNotion);
+  useHotkey('SaveToNotion', () => persistData(editorSnapshot));
 
 
   const footer = (
@@ -107,7 +127,7 @@ const NotePage = () => {
       </div>
     </>
   )
-  const [loadingNotion, setLoadingNotion] = useState<boolean>(false);
+  const [loadingSync, setLoadingSync] = useState<boolean>(false);
 
 
   return <Layout>
@@ -128,15 +148,15 @@ const NotePage = () => {
 
         <CommonButton
           variant="primary"
-          onClick={saveToNotion}>
-          {loadingNotion ? <div class="spinner-grow inline-block w-8 h-8 bg-current rounded-full opacity-0 text-gray-300" role="status">
+          onClick={() => persistData(editorSnapshot)}>
+          {loadingSync ? <div class="spinner-grow inline-block w-8 h-8 bg-current rounded-full opacity-0 text-gray-300" role="status">
             <span class="visually-hidden">Loading...</span>
           </div> : <>
             <div>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.0001 22.2877H13.0001V7.80237L16.2428 11.045L17.657 9.63079L12.0001 3.97394L6.34326 9.63079L7.75748 11.045L11.0001 7.80236V22.2877ZM18 3H6V1H18V3Z" fill="currentColor" /></svg>
             </div>
             <div>
-              Save to Notion
+              Sync
             </div>
           </>}
 
@@ -146,7 +166,7 @@ const NotePage = () => {
     <div class={`
         px-4 mt-1
         `}>
-      <TiptabEditor saveToNotion={saveToNotion as any}/>
+      <TiptabEditor persistData={persistData} setEditorSnapshot={setEditorSnapshot}/>
     </div>
     <FooterLayout>
       {footer}
@@ -154,6 +174,26 @@ const NotePage = () => {
   </Layout>
 
 }
+
+const convertTipTapToNoteType = (content: JSONContent) => {
+  if (!content?.content) {
+    return {};
+  }
+
+  let title: string = "";
+  for (const node of content.content) {
+    if (!title?.trim() && node.type === 'heading') {
+      title = node.content?.[0].text || "Untitled";
+      break;
+    }
+  }
+
+  return {
+    title,
+    content,
+  } as Partial<NoteType>;
+}
+
 
 
 export default NotePage;

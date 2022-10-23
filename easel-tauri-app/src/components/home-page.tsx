@@ -86,6 +86,7 @@ const HomePage = () => {
         ],
       },
       createdAt: Date.now(),
+      updatedAt: Date.now(),
       noteId: randomString(20),
       preview: "",
     });
@@ -169,7 +170,7 @@ const NoteListItem: React.FC<{ note: NoteType }> = ({ note }) => {
     state.setPage,
     state.setSelectNoteId,
     state.deleteNote]);
-
+  
   const selectNote = () => {
     setPage('note');
     setSelectNoteId(note.noteId);

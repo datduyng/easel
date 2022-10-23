@@ -13,7 +13,7 @@ export const baseUrl = isDev ? "http://localhost:3000" : "https://easel-api.verc
 const notionDbId = "f36eba38aa3f413786fad37c690e474c";
 
 // debounce fetch remote
-const updateNoteRemote = debounce(async (note: NoteType) => fetch(`${baseUrl}/api/notes`, {
+const updateNoteRemote = debounce(async (note: Partial<NoteType>) => fetch(`${baseUrl}/api/notes`, {
     method: 'PUT',
     headers: {
         'Content-Type': 'application/json',
@@ -138,7 +138,7 @@ interface Store {
     setPage: (page: 'home' | 'note') => void;
     getNoteContent: (id: string) => { content: JSONContent };
     setNoteContent: (id: string, content: JSONContent) => void;
-    updateNoteMeta: (id: string, note: Partial<NoteType>, shouldPersistRemote: boolean) => void;
+    updateNoteMeta: (id: string, note: Partial<NoteType>, shouldPersistRemote: boolean, onRemoteData: (remoteData: any) => void) => void;
     deleteNote: (id: string) => void;
     createOrUpdateNotionPage: (id: string, note: Partial<NoteType>) => void;
 }
@@ -150,6 +150,7 @@ export interface NoteType {
     preview: string;
     content: JSONContent;
     createdAt: number;
+    updatedAt: number;
     _id?: string; // back end mongodb id
 }
 
@@ -210,7 +211,7 @@ const usePersistedStore = create<Store>()(
                 })
                     ?.then((res) => res.json())
                     .then((data) => {
-                        console.log("Added data remotely");
+                        console.log("[usePersistedStore] addNote remtoe");
                     }).catch((err) => {
                         console.error("[addNote] error", err);
                     });
@@ -219,14 +220,15 @@ const usePersistedStore = create<Store>()(
                 set({ notes: [...notes, note] });
                 return note;
             },
-            updateNoteMeta: (id, note, shouldPersistRemote) => {
+            updateNoteMeta: (id, note, shouldPersistRemote, onRemoteData) => {
                 delete note.noteId;
                 const notes = get().notes;
                 const noteIndex = notes.findIndex((note) => note.noteId === id);
 
-                const updatedNote = {
+                const updatedNote: Partial<NoteType> = {
                     ...notes[noteIndex],
                     ...note,
+                    updatedAt: Date.now(),
                 };
 
                 if (updatedNote.content) {
@@ -240,21 +242,28 @@ const usePersistedStore = create<Store>()(
                 };
 
                 if (shouldPersistRemote) {
-                    updateNoteRemote(updatedRemoteNote)
+                    const something = updateNoteRemote(updatedRemoteNote)
                         ?.then((res) => res.json())
                         .then((data) => {
-                            console.log("updated note remotely");
+                            console.info("updated note remotely");
+                            onRemoteData(data);
                         }).catch((err) => {
                             console.error("[addNote] error", err);
+                            onRemoteData(null);
                         });
+
+                    if (!something) {
+                        onRemoteData(null);
+                    }
                 }
 
 
                 omit('content', updatedNote)
 
                 deleteContent(updatedNote);
-                notes[noteIndex] = updatedNote;
+                notes[noteIndex] = updatedNote as NoteType;
                 set({ notes: [...notes] });
+
             },
             page: 'home',
             setPage: (page) => set({ page }),
@@ -283,7 +292,7 @@ const usePersistedStore = create<Store>()(
                 })
                     ?.then((res) => res.json())
                     .then((data) => {
-                        console.log("Deleted data remotely");
+                        console.info("[usePersistStore] DeletedNote remotely");
                     }).catch((err) => {
                         console.error("[addNote] error", err);
                     });
@@ -311,7 +320,7 @@ const usePersistedStore = create<Store>()(
                         });
 
                         const notionId = (response as any).id;
-                        get().updateNoteMeta(id, { notionId }, true);
+                        get().updateNoteMeta(id, { notionId }, true, () => {});
                     }
                 }
             },
@@ -321,6 +330,7 @@ const usePersistedStore = create<Store>()(
         }
     )
 );
+
 
 // convert JSONContent List to plain text
 const convertTipTapToPlainText = (content?: JSONContent) => {
@@ -351,7 +361,6 @@ const convertTipTapToPlainText = (content?: JSONContent) => {
             }
         }
     }
-    console.log('text', text);
     return text;
 }
 
@@ -383,7 +392,6 @@ const convertTipTapToBlocks = (content: JSONContent) => {
     let text = [];
     const nodes = content.content;
     for (let i = 1; i < nodes.length; i++) {
-        console.log("nodes[i]", nodes[i].type);
         if (nodes[i].type === 'paragraph') {
             text.push({
                 type: 'paragraph',

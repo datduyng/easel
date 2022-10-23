@@ -41,8 +41,8 @@ const EscShortCutBlurExtension = Extension.create({
   }
 })
 
-const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
-  const [editorValue, setEditorValue] = useState<JSONContent>();
+const TiptabEditor = ({ persistData, setEditorSnapshot }: { persistData: any; setEditorSnapshot: (json: JSONContent) => void; }) => {
+  // const [editorValue, setEditorValue] = useState<JSONContent>();
 
   const [notes,
     addNote,
@@ -53,6 +53,7 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
     setNoteContent,
     createOrUpdateNotionPage,
     updateNoteMeta,
+    getNoteMetaById,
   ] = usePersistedStore(state => [
     state.notes,
     state.addNote,
@@ -63,6 +64,7 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
     state.setNoteContent,
     state.createOrUpdateNotionPage,
     state.updateNoteMeta,
+    state.getNoteMetaById,
   ]);
 
   useHotkey('Esc', () => {
@@ -72,29 +74,52 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
     editor?.commands.focus('end');
   });
 
-  const persistData = debounce((value) => {
-    if (!selectedNoteId) {
-      return;
-    }
-    const note = convertTipTapToNoteType(value);
-    updateNoteMeta(selectedNoteId, note, true);
-    saveToNotion();
-  }, 600);
+  // const persistData = debounce((value) => {
+  //   if (!selectedNoteId) {
+  //     return;
+  //   }
+  //   const note = convertTipTapToNoteType(value);
+  //   updateNoteMeta(selectedNoteId, note, true);
+  //   // saveToNotion();
+  // }, 1000);
+  const defaultContent = {
+    type: 'doc',
+    content: [],
+  };
+  const localContent = selectedNoteId ? getNoteContent(selectedNoteId).content : defaultContent;
+  const [data, setData] = useState<JSONContent>(localContent);
 
-  const { data, error } = useSWR(`/api/notes/${selectedNoteId}`, () => fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
-    .then(res => res.json())
-    .then(res => {
-      const defaultContent = {
-        type: 'doc',
-        content: [],
-      };
-      if (res?.content) {
-        return (res.content || defaultContent) as JSONContent;
+  useEffect(() => {
+    (async () => {
+      
+      if (!selectedNoteId) {
+        return;
       }
+      // use data from local storage
+      setData(localContent);
 
-      return selectedNoteId ? getNoteContent(selectedNoteId).content : defaultContent;
-    })
-  );
+      console.info('[tiptap-editor] fetching new data from remote');
+
+      // use data from remote if local is older
+      fetch(`${baseUrl}/api/notes?id=${selectedNoteId}`)
+        .then(res => res.json())
+        .then(remoteData => {
+          if (remoteData?.content) {
+            // compare local content with remote content
+            const localNoteMeta = getNoteMetaById(selectedNoteId!);
+            if (localNoteMeta?.updatedAt && remoteData.updatedAt > localNoteMeta.updatedAt) {
+              setData(remoteData.content);
+              console.info("[tiptap-editor] using remote data");
+              return remoteData.content;
+            }
+            console.info('[tiptap-editor] local content is newer');
+          }
+
+          return localContent;
+        })
+
+    })()
+  }, [selectedNoteId]);
 
   const editor = useEditor({
     extensions: [
@@ -114,7 +139,7 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
               return this.editor.commands.blur()
             },
             'Mod-s': () => {
-              return saveToNotion();
+              return persistData(this.editor.getJSON());
             },
             'Tab': (editor) => {
               // Do whatever you want here...
@@ -152,9 +177,9 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
 
     ],
 
-    onUpdate: ({ editor: e }) => {
+    onUpdate: ({ editor: e, transaction }) => {
       const content = e.getJSON();
-      setEditorValue(content);
+      setEditorSnapshot(content);
       persistData(content);
     },
     enablePasteRules: [
@@ -179,24 +204,6 @@ const TiptabEditor = ({ saveToNotion }: { saveToNotion: () => boolean }) => {
 }
 
 
-const convertTipTapToNoteType = (content: JSONContent) => {
-  if (!content?.content) {
-    return {};
-  }
-
-  let title: string = "";
-  for (const node of content.content) {
-    if (!title?.trim() && node.type === 'heading') {
-      title = node.content?.[0].text || "Untitled";
-      break;
-    }
-  }
-
-  return {
-    title,
-    content,
-  } as Partial<NoteType>;
-}
 
 
 
